@@ -720,7 +720,20 @@ varying vec4 vP; varying vec3 vWorld;
 void main(){
   vec2 c=gl_PointCoord*2.0-1.0; float r=length(c); vec3 col; float a;
   if(vP.z<0.5){ if(r>1.0) discard; a=(1.0-smoothstep(0.55,1.0,r))*vP.y; col=mix(vec3(0.78,0.92,0.98),vec3(1.0),1.0-smoothstep(0.0,0.6,length(c-vec2(-0.3,-0.35)))); }
-  else if(vP.z<1.5){ a=((1.0-smoothstep(0.03,0.10,abs(r-0.84)))+(1.0-smoothstep(0.0,0.3,abs(r-0.66)))*0.12)*vP.y; col=vec3(0.97,0.99,1.0); }
+  else if(vP.z<1.5){
+    float sd=floor(vP.w), k=fract(vP.w);
+    float an=sd*1.7; vec2 q=vec2(cos(an)*c.x-sin(an)*c.y, sin(an)*c.x+cos(an)*c.y); float rq=length(q);
+    vec2 np=q*4.2+sd*5.3;
+    float n=vnoise(np)*0.5+vnoise(np*2.3+3.1)*0.3+vnoise(np*5.3+7.7)*0.2;
+    float edge=0.5+0.25*k+(n-0.5)*0.32;
+    float body=(1.0-smoothstep(edge-0.14,edge,rq))*(1.0-smoothstep(0.86,0.99,rq));
+    float th=mix(0.36,0.66,k);
+    float foam=smoothstep(th,th+0.04,n+0.12*(1.0-rq));
+    float lace=(1.0-smoothstep(0.0,0.03,abs(n-th+0.03)))*smoothstep(0.05,0.35,k);
+    float bub=step(0.94,hash12(floor(q*26.0)+sd))*(1.0-k*0.6);
+    a=clamp(body*(max(foam*(0.45+0.55*smoothstep(0.4,0.8,n)),lace*0.85)+bub*0.5),0.0,1.0)*pow(1.0-k,1.3)*vP.y;
+    col=mix(vec3(0.78,0.88,0.92),vec3(0.98,0.99,1.0),smoothstep(0.35,0.75,n));
+  }
   else { a=pow(max(1.0-r*r,0.0),2.0)*vP.y; col=waterMix(vec3(0.86,0.80,0.66),-vWorld.z,max(depthAt(vWorld.xy),0.0)); }
   if(a<0.004) discard;
   gl_FragColor=vec4(col,a);
@@ -1770,7 +1783,7 @@ class Pool {
     let n = 0;
     for (const p of this.items){ if (p.age < 0) continue; const o = n * 3, q = n * 4;
       this.pos[o] = p.x; this.pos[o + 1] = p.y; this.pos[o + 2] = p.z;
-      this.dat[q] = p.size; this.dat[q + 1] = p.alpha; this.dat[q + 2] = p.type; this.dat[q + 3] = 0; n++; }
+      this.dat[q] = p.size; this.dat[q + 1] = p.alpha; this.dat[q + 2] = p.type; this.dat[q + 3] = p.type === 1 ? (p.seed || 0) + Math.min(0.999, p.age / p.life) : 0; n++; }
     this.geo.setDrawRange(0, n); this.geo.attributes.position.needsUpdate = true; this.geo.attributes.aP.needsUpdate = true;
     this.mesh.visible = n > 0;
   }
@@ -1911,8 +1924,7 @@ function whirlForce(x, y, k){
 // splashes, droplets, silt
 function splash(x, y, power){
   addDrop(x, y, 0.9 * power + 0.6, -1.3 * power);
-  airFx.add({ type: 1, x, y, z: 0.03, vx: 0, vy: 0, vz: 0, size: 0.8, grow: 7 * power, life: 1.5, age: 0, alpha: 0.9 });
-  airFx.add({ type: 1, x, y, z: 0.03, vx: 0, vy: 0, vz: 0, size: 0.4, grow: 4.5 * power, life: 1.2, age: -0.18, alpha: 0.8 });
+  airFx.add({ type: 1, x, y, z: 0.03, vx: 0, vy: 0, vz: 0, size: 1.6 + 2.2 * power, grow: 1.6 * power, life: 2.4 + power, age: 0, alpha: 0.95, seed: 1 + ((rnd() * 90) | 0) });
   const n = Math.round(14 + 24 * power);
   for (let i = 0; i < n; i++){ const a = rnd() * TAU, s = 1.2 + rnd() * 3.6 * power;
     airFx.add({ type: 0, x: x + Math.cos(a) * 0.3, y: y + Math.sin(a) * 0.3, z: 0.05, vx: Math.cos(a) * s, vy: Math.sin(a) * s, vz: 3.5 + rnd() * 6 * power, size: 0.1 + rnd() * 0.17, life: 4, age: 0, alpha: 0.95 }); }
@@ -1931,7 +1943,7 @@ function updateFx(dt){
     if (p.type === 0){
       p.vz -= G * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt;
       if (p.z < 0){ airFx.items.splice(i, 1); if (depthAt(p.x, p.y) > 0){ addDrop(p.x, p.y, 0.35, p.drip ? -0.25 : -0.12); if (p.drip || rnd() < 0.12) Snd.plink(p.x / (world.W / 2), p.drip ? 0.08 : 0.04); } continue; }
-    } else { const k = p.age / p.life; p.size += p.grow * dt * (1 - k * 0.6); p.alpha = (1 - k) * (p.type === 1 ? 0.9 : 0.6); }
+    } else { const k = p.age / p.life; p.size += p.grow * dt * (1 - k * 0.6); p.alpha = p.type === 1 ? 0.95 : (1 - k) * 0.6; }
     if (p.age > p.life) airFx.items.splice(i, 1);
   }
   for (let i = underFx.items.length - 1; i >= 0; i--){
@@ -2232,7 +2244,7 @@ function updateTurtle(tu, dt, t){
 function dolphinBlow(d){
   const L = SWIMSP.dolphin.L * d.scale; const bx = d.x + Math.cos(d.heading) * L * 0.36, by = d.y + Math.sin(d.heading) * L * 0.36;
   for (let i = 0; i < 16; i++){ const a = rnd() * TAU, s = 0.3 + rnd() * 0.9; airFx.add({ type: 0, x: bx, y: by, z: 0.2, vx: Math.cos(a) * s, vy: Math.sin(a) * s, vz: 4 + rnd() * 3, size: 0.06 + rnd() * 0.08, life: 3, age: 0, alpha: 0.85 }); }
-  airFx.add({ type: 1, x: bx, y: by, z: 0.03, size: 0.4, grow: 2.5, life: 0.9, age: 0, alpha: 0.6 });
+  airFx.add({ type: 1, x: bx, y: by, z: 0.03, size: 1.4, grow: 0.8, life: 1.8, age: 0, alpha: 0.7, seed: 1 + ((rnd() * 90) | 0) });
   addDrop(bx, by, 0.9, -0.35); Snd.blow(bx / (world.W / 2));
 }
 function updateDolphin(d, dt, t){
@@ -2799,7 +2811,6 @@ function frame(dt){
     rainAcc += dt * world.W * world.H / 260;
     while (rainAcc > 1){ rainAcc -= 1; const x = (rnd() - 0.5) * world.W, y = (rnd() - 0.5) * world.H;
       if (depthAt(x, y) > 0){ addDrop(x, y, 0.28 + rnd() * 0.15, -0.3 - rnd() * 0.15);
-        if (rnd() < 0.25) airFx.add({ type: 1, x, y, z: 0.03, size: 0.15, grow: 1.4, life: 0.5, age: 0, alpha: 0.6 });
         if (rnd() < 0.3) Snd.plink(x / (world.W / 2), 0.03 + rnd() * 0.03); } }
   }
 
