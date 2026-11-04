@@ -222,6 +222,7 @@ input[type=range]:focus-visible{outline:2px solid var(--sun);outline-offset:3px;
     transform:translateY(16px) scale(.98);transform-origin:bottom center;}
   .panel.in{transform:none;}
   .cardrow{grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:6px;}
+  .tab{padding:6px 4px;font-size:9.5px;letter-spacing:.04em;}
   .card{width:auto;}
   .ph h2{font-size:20px;}
   .brand p{display:none;}
@@ -533,7 +534,7 @@ void main(){
   col*=1.0-(shw.g*0.32+shw.r*0.12)*water*(1.0-uOvercast*0.6);
 
   // creatures below the surface
-  vec4 cu=texture2D(tUnder,clamp(uv+refr/uWorld*0.35*water,0.001,0.999));
+  vec4 cu=texture2D(tUnder,clamp(uv+refr/uWorld*0.12*water,0.001,0.999));
   col=col*(1.0-cu.a)+cu.rgb;
 
   // surface light
@@ -962,10 +963,11 @@ ${GLSL_ROT}
 varying vec3 vWorld; varying vec3 vN; varying vec3 vLocal; varying vec3 vNr; varying vec4 vP; varying float vShade; varying float vSeed;
 float env(float u){
   if(uSpecies>1.5 && uSpecies<2.5) return 0.12*(1.0-smoothstep(0.0,0.3,u))+pow(smoothstep(0.28,1.0,u),1.7);
+  if(uSpecies>3.5) return 0.04+0.96*pow(smoothstep(0.2,1.0,u),1.8);
   return 0.10+0.90*pow(smoothstep(0.12,1.0,u),1.3);
 }
 vec2 spine(float u){
-  float k=(uSpecies>1.5 && uSpecies<2.5)? 3.6 : 6.2;
+  float k=(uSpecies>1.5 && uSpecies<2.5)? 3.6 : (uSpecies>3.5 ? (uSpecies>4.5 && uSpecies<5.5 ? 3.3 : 4.3) : 6.2);
   float o=aAnim.y*env(u)*sin(aAnim.x-k*u);
   float e=0.01; float o2=aAnim.y*env(u+e)*sin(aAnim.x-k*(u+e));
   return vec2(o,(o2-o)/e);
@@ -994,8 +996,9 @@ void main(){
     if(part>0.5 && part<2.5){
       mat3 R;
       if(dol) R=rotY(-side*(0.18+aAnim2.y*0.6))*rotZ(side*0.06*sin(ph))*rotX(-0.1+turn*0.15*side);
+      else if(uSpecies>3.5) R=rotY(-side*(0.03+aAnim2.y))*rotX(aAnim2.x);
       else { float f=aAnim2.x+side*0.5; R=rotZ(side*(0.25+(0.45+aAnim2.y*0.35)*sin(f)))*rotX(0.25*cos(f)); }
-      if(part>1.5 && !dol) R=rotX(0.2*sin(aAnim2.x*0.7));
+      if(part>1.5 && !dol && uSpecies<3.5) R=rotX(0.2*sin(aAnim2.x*0.7));
       P=aJ+R*(P-aJ); N=R*N;
     }
     vec2 sp=spine(u);
@@ -1119,11 +1122,61 @@ vec3 dolphin(){
   if(uu<0.095 && abs(vNr.z)<0.6){ float ml=abs(vLocal.z/uLen+0.012-uu*0.08); c=mix(c,vec3(0.15),(1.0-smoothstep(0.0,0.004,ml))*0.8); }
   return c;
 }
+uniform float uTime;
+float causticF(vec2 uv, float t){
+  vec2 p=mod(uv*TAU,TAU)-250.0; vec2 i=p; float c=1.0; float inten=0.005;
+  for(int n=0;n<4;n++){ float tt=t*(1.0-(3.5/float(n+1))); i=p+vec2(cos(tt-i.x)+sin(tt+i.y), sin(tt-i.y)+cos(tt+i.x));
+    c+=1.0/length(vec2(p.x/(sin(i.x+tt)/inten), p.y/(cos(i.y+tt)/inten))); }
+  c/=4.0; c=1.17-pow(c,1.4); return pow(abs(c),8.0);
+}
+vec3 shark(){
+  float uu=0.5-vLocal.y/uLen; float part=vP.x; float nz=vNr.z; float zz=vLocal.z/uLen; float ax=abs(vLocal.x)/uLen;
+  bool ws=uSpecies>4.5 && uSpecies<5.5; bool bt=uSpecies>5.5; bool gw=uSpecies<4.5;
+  vec3 top=gw? vec3(0.30,0.33,0.37) : (ws? vec3(0.19,0.27,0.34) : vec3(0.56,0.51,0.43));
+  vec3 belly=gw? vec3(0.94,0.94,0.93) : (ws? vec3(0.90,0.91,0.89) : vec3(0.95,0.93,0.89));
+  float edge=-0.12+(gw?0.14:0.05)*sin(uu*21.0+vSeed*7.0)+0.06*(vnoise(vec2(uu*38.0,zz*18.0))-0.5);
+  vec3 c=mix(belly,top,smoothstep(edge-0.07,edge+0.07,nz));
+  c*=0.92+0.12*vnoise(vec2(uu*260.0,(zz+vLocal.x/uLen)*120.0));
+  if(gw) c=mix(c,c*1.22,smoothstep(0.485,0.5,abs(fract(uu*9.0+zz*13.0+vSeed*3.0)-0.5))*0.35*step(0.2,nz));
+  if(ws){
+    float th=atan(vLocal.z,vLocal.x);
+    vec2 q=part<0.5? vec2(uu*(uu<0.18?70.0:44.0), th*(uu<0.18?6.0:4.0)) : vLocal.xy/uLen*55.0;
+    vec2 i=floor(q), f=fract(q)-0.5; float h=hash12(i+vSeed);
+    float spot=1.0-smoothstep(0.15,0.24,length(f-(vec2(hash12(i+3.1),hash12(i+7.7))-0.5)*0.35));
+    float stripe=part<0.5? smoothstep(0.43,0.48,abs(fract(uu*13.0)-0.5))*step(0.17,uu)*step(uu,0.8) : 0.0;
+    float hl=part<0.5? smoothstep(0.43,0.48,abs(fract(th*1.4)-0.5))*step(0.15,uu) : 0.0;
+    float mask=part<0.5? smoothstep(edge-0.02,edge+0.2,nz) : 1.0;
+    c=mix(c,vec3(0.87,0.89,0.87),max(spot*step(0.2,h),max(stripe,hl)*0.6)*mask);
+    float ridge=(1.0-smoothstep(0.004,0.012,abs(ax-0.045)))*smoothstep(0.55,0.85,nz)*step(0.22,uu)*step(uu,0.75);
+    if(part<0.5) c=mix(c,c*1.3,ridge);
+  }
+  if(bt && part<0.5){ float band=(1.0-smoothstep(0.008,0.02,abs(zz+0.012-0.02*sin(uu*7.0))))*step(0.36,uu)*step(uu,0.68)*(1.0-smoothstep(0.3,0.6,abs(nz))); c=mix(c,belly,band*0.85); }
+  if(part>0.5 && part<2.5) c=mix(top,belly,0.12)*(0.92+0.1*vnoise(vLocal.xy/uLen*90.0));
+  if(part>0.5){ float tk=vP.w;
+    if(bt) c=mix(c,vec3(0.04),smoothstep(0.72,0.88,tk));
+    if(gw && part<2.5) c=mix(c,c*0.6,smoothstep(0.75,0.95,tk));
+  }
+  if(part<0.5 && abs(nz)<0.6){
+    float g0=ws?0.115:0.17, gs=ws?0.021:0.015, gh=ws?0.07:0.05;
+    for(int i=0;i<5;i++){ float d=abs(uu-(g0+float(i)*gs)+zz*0.18); if(d<0.0045 && abs(zz)<gh*(1.0-0.08*float(i))) c*=mix(0.3,1.0,smoothstep(0.0015,0.0045,d)); }
+  }
+  float ue=ws?0.05:(gw?0.072:0.068), ze=ws?0.0:0.022, er=ws?0.006:0.008;
+  if(part<0.5 && ax>0.01){ float de=length(vec2(uu-ue,zz-ze)); c=mix(c,vec3(0.02),1.0-smoothstep(er*0.7,er,de));
+    if(bt) c=mix(c,vec3(0.25,0.35,0.25),(1.0-smoothstep(er*0.35,er*0.55,de))*0.6);
+    c+=vec3(0.45)*(1.0-smoothstep(0.0,er*0.3,length(vec2(uu-ue+er*0.3,zz-ze-er*0.3)))); }
+  if(part<0.5){
+    if(ws){ if(uu<0.035 && abs(zz+0.012)<0.004 && abs(nz)<0.7) c=mix(c,vec3(0.06),0.9); }
+    else if(nz<-0.15 && ax<0.045){ float mu=0.075+ax*ax*14.0; float d=abs(uu-mu);
+      c=mix(c,vec3(0.16,0.09,0.09),1.0-smoothstep(0.002,0.004,d));
+      if(gw) c=mix(c,vec3(0.96),(1.0-smoothstep(0.0012,0.0026,abs(uu-mu-0.0035)))*step(0.5,fract(ax*uLen*9.0))*0.8); }
+  }
+  return c;
+}
 void main(){
-  if(uMode>1.5 && uMode<2.5){ gl_FragColor=vec4(vShade*(uSpecies>0.5&&uSpecies<1.5||uSpecies>2.5?0.6:1.0),0.0,0.0,1.0); return; }
+  if(uMode>1.5 && uMode<2.5){ gl_FragColor=vec4(vShade*((uSpecies>0.5&&uSpecies<1.5)||(uSpecies>2.5&&uSpecies<3.5)?0.6:1.0),0.0,0.0,1.0); return; }
   if(uMode<0.5 && vWorld.z>0.0) discard;
   if(uMode>0.5 && uMode<1.5 && vWorld.z<=0.0) discard;
-  vec3 col = uSpecies<0.5? turtle() : (uSpecies<1.5? clownfish() : (uSpecies<2.5? dolphin() : reef()));
+  vec3 col = uSpecies<0.5? turtle() : (uSpecies<1.5? clownfish() : (uSpecies<2.5? dolphin() : (uSpecies<3.5? reef() : shark())));
   vec3 N=normalize(vN); if(!gl_FrontFacing) N=-N;
   vec3 L=normalize(vec3(-uSun*0.55,1.0));
   float k;
@@ -1133,6 +1186,7 @@ void main(){
   float sh=(uSpecies>1.5&&uSpecies<2.5)? 0.22 : 0.16;
   float spec=pow(max(dot(reflect(-L,N),V),0.0),uSpecies>1.5&&uSpecies<2.5?40.0:22.0)*sh;
   col=col*k+spec;
+  if(uMode<0.5){ float dz=max(-vWorld.z,0.0); col+=col*causticF(vWorld.xy/9.0,uTime*0.55)*0.85*max(N.z,0.0)*exp(-dz*0.14); }
   if(uMode<0.5) col=waterMix(col,-vWorld.z,max(depthAt(vWorld.xy),0.0));
   gl_FragColor=vec4(col,1.0);
 }`;
@@ -1580,6 +1634,9 @@ const SPECIES = {
 SPECIES.turtle = { kind: 'turtle', name: 'Groene zee\u00ADschildpad', sci: 'Chelonia mydas', splash: 1.2 };
 SPECIES.clown = { kind: 'clown', name: 'Clownvis', sci: 'Amphiprion ocellaris', splash: 0.45 };
 SPECIES.dolphin = { kind: 'dolphin', name: 'Tuimelaar', sci: 'Tursiops truncatus', splash: 1.5 };
+SPECIES.gwhite = { kind: 'shark', name: 'Witte haai', sci: 'Carcharodon carcharias', splash: 1.7 };
+SPECIES.whale = { kind: 'shark', name: 'Walvis\u00ADhaai', sci: 'Rhincodon typus', splash: 2.2 };
+SPECIES.blacktip = { kind: 'shark', name: 'Zwartpunt\u00ADrifhaai', sci: 'Carcharhinus melanopterus', splash: 1.0 };
 SPECIES.stag = { kind: 'coral', type: 3, name: 'Hertshoorn\u00ADkoraal', sci: 'Acropora cervicornis', splash: 0.6 };
 SPECIES.brain = { kind: 'coral', type: 4, name: 'Hersen\u00ADkoraal', sci: 'Diploria labyrinthiformis', splash: 0.6 };
 SPECIES.plate = { kind: 'coral', type: 5, name: 'Plaat\u00ADkoraal', sci: 'Acropora hyacinthus', splash: 0.6 };
@@ -1588,6 +1645,7 @@ SPECIES.soft = { kind: 'coral', type: 1, name: 'Zacht koraal', sci: 'Sinularia f
 const CATS = [
   { id: 'rays', name: 'Roggen', keys: ['manta', 'eagle', 'sting'] },
   { id: 'jellies', name: 'Kwallen', keys: ['moon', 'nettle'] },
+  { id: 'sharks', name: 'Haaien', keys: ['gwhite', 'whale', 'blacktip'] },
   { id: 'life', name: 'Zeeleven', keys: ['turtle', 'clown', 'dolphin'] },
   { id: 'coral', name: 'Koraal', keys: ['stag', 'brain', 'plate', 'fan', 'soft'] },
 ];
@@ -1944,12 +2002,63 @@ function buildPlate(){
   return cb.geo();
 }
 
+// ---- sharks: fusiform body, heterocercal tail, rigid dorsal fins, stiff pectorals
+const SHARK_DEF = {
+  gwhite: { L: 7.5, edge: 0.95,
+    keys: [[0, 0.004, 0.004, 0.004, 0], [0.03, 0.03, 0.03, 0.025, 0], [0.08, 0.06, 0.06, 0.05, -0.005], [0.15, 0.09, 0.09, 0.08, -0.005], [0.3, 0.115, 0.115, 0.105, 0], [0.45, 0.11, 0.11, 0.1, 0], [0.6, 0.08, 0.085, 0.075, 0], [0.75, 0.045, 0.05, 0.045, 0], [0.85, 0.024, 0.032, 0.026, 0], [0.9, 0.02, 0.026, 0.02, 0]],
+    up: [0.21, 0.95], lo: [0.18, -0.85], root: 0.07, dorsal: [0.33, 0.45, 0.5, 0.12], dorsal2: [0.79, 0.82, 0.84, 0.022], pect: [0.27, 0.22, 0.085, 0.12, 0.07], pelvic: 0.6, anal: 0.79 },
+  whale: { L: 16, edge: 0.8,
+    keys: [[0, 0.06, 0.028, 0.028, 0], [0.03, 0.1, 0.055, 0.05, 0], [0.1, 0.13, 0.08, 0.07, 0], [0.25, 0.14, 0.11, 0.1, 0], [0.45, 0.12, 0.11, 0.1, 0], [0.6, 0.09, 0.09, 0.08, 0], [0.75, 0.05, 0.06, 0.05, 0], [0.85, 0.026, 0.04, 0.03, 0], [0.9, 0.02, 0.03, 0.025, 0]],
+    up: [0.25, 1.0], lo: [0.13, -0.7], root: 0.07, dorsal: [0.5, 0.6, 0.64, 0.1], dorsal2: [0.76, 0.8, 0.82, 0.03], pect: [0.24, 0.2, 0.08, 0.09, 0.06], pelvic: 0.62, anal: 0.78 },
+  blacktip: { L: 3.6, edge: 0.95,
+    keys: [[0, 0.006, 0.006, 0.006, 0], [0.04, 0.035, 0.032, 0.028, -0.004], [0.1, 0.06, 0.06, 0.052, -0.004], [0.3, 0.09, 0.09, 0.08, 0], [0.45, 0.085, 0.085, 0.078, 0], [0.6, 0.065, 0.068, 0.06, 0], [0.75, 0.038, 0.042, 0.036, 0], [0.85, 0.021, 0.027, 0.022, 0], [0.9, 0.017, 0.022, 0.018, 0]],
+    up: [0.27, 0.62], lo: [0.12, -0.8], root: 0.08, dorsal: [0.32, 0.44, 0.48, 0.11], dorsal2: [0.77, 0.8, 0.82, 0.03], pect: [0.27, 0.2, 0.08, 0.1, 0.05], pelvic: 0.6, anal: 0.78 },
+};
+function buildShark(key){
+  const d = SHARK_DEF[key], L = d.L, gb = new GB();
+  loftBody(gb, L, d.keys, 0, 0.9, 46, 26, 0, { edge: d.edge });
+  const P = u => prof(d.keys, u), top = u => (P(u)[3] + P(u)[1]) * L, bot = u => (P(u)[3] - P(u)[2]) * L;
+  // caudal fin: two lobes, upper lobe larger
+  const y0 = (0.5 - 0.885) * L, z0 = P(0.885)[3] * L;
+  const lobe = (len, ang, sign) => finSheet(gb, 10, 6, (a, b) => {
+    const ay = -Math.cos(ang), az = Math.sin(ang);
+    const lead = [y0 + 0.012 * L, z0 + sign * 0.006 * L], trail = [y0 - d.root * L, z0];
+    const base = [lerp(lead[0], trail[0], b), lerp(lead[1], trail[1], b)], tip = [y0 + ay * len * L, z0 + az * len * L];
+    let y = lerp(base[0], tip[0], a), z = lerp(base[1], tip[1], a);
+    const bow = Math.sin(Math.PI * a) * len * L * (0.1 - 0.16 * b) * (1 - 0.3 * a);
+    y += sign * az * bow; z += -sign * ay * bow;
+    return [[0, y, z], 3, Math.min(1.05, 0.5 - y / L), 0, a];
+  });
+  lobe(d.up[0], d.up[1], 1); lobe(d.lo[0], d.lo[1], -1);
+  // dorsal fins: rigid, carried by the body wave only
+  const dorsal = (u0, u1, ut, h) => finSheet(gb, 8, 8, (b, a) => {
+    const u = u0 + a * (u1 - u0); const base = [(0.5 - u) * L, top(u) - 0.006 * L], tip = [(0.5 - ut) * L, top((u0 + u1) / 2) + h * L];
+    const y = lerp(base[0], tip[0], b) + Math.sin(Math.PI * b) * 0.012 * L * (a - 0.35), z = lerp(base[1], tip[1], b * (1 - 0.1 * a));
+    return [[0, y, z], 4, 0.5 - y / L, 0, b];
+  });
+  dorsal(...d.dorsal); dorsal(...d.dorsal2);
+  // anal fin
+  finSheet(gb, 4, 4, (b, a) => { const u = d.anal + a * 0.04; const y = (0.5 - u) * L - b * 0.02 * L; return [[0, y, bot(u) + 0.004 * L - b * 0.025 * L * Math.sin(Math.PI * Math.min(a * 1.2, 1))], 4, 0.5 - y / L, 0, b]; });
+  for (const side of [1, -1]){
+    const [pu, span, chord, sweep, drop] = d.pect; const pr = P(pu);
+    const root = [side * pr[0] * 0.75 * L, (0.5 - pu) * L, (pr[3] - pr[2] * 0.45) * L];
+    paddle(gb, L, 1, side, pu, root,
+      t => [root[0] + side * t * span * L, root[1] - (t * 0.03 + t * t * sweep) * L, root[2] - t * drop * L],
+      t => chord * L * (1 - 0.72 * t) + 0.006 * L, t => 0.008 * L * (1 - t) + 0.002 * L, 10, 10);
+    const qr = P(d.pelvic); const r2 = [side * qr[0] * 0.5 * L, (0.5 - d.pelvic) * L, (qr[3] - qr[2] * 0.8) * L];
+    paddle(gb, L, 2, side, d.pelvic, r2, t => [r2[0] + side * t * 0.05 * L, r2[1] - t * 0.05 * L, r2[2] - t * 0.02 * L],
+      t => 0.03 * L * (1 - 0.6 * t) + 0.004 * L, t => 0.004 * L, 5, 8);
+  }
+  return gb.geo();
+}
+
 // ---- instanced meshes for the new creatures and the living coral
-const SWIMSP = { turtle: { species: 0, L: 3.6, max: 48 }, clown: { species: 1, L: 1.2, max: 72 }, dolphin: { species: 2, L: 5.2, max: 48 }, reef: { species: 3, L: 1.3, max: 72 } };
+const SWIMSP = { turtle: { species: 0, L: 3.6, max: 48 }, clown: { species: 1, L: 1.2, max: 72 }, dolphin: { species: 2, L: 5.2, max: 48 }, reef: { species: 3, L: 1.3, max: 72 },
+  gwhite: { species: 4, L: 7.5, max: 16 }, whale: { species: 5, L: 16, max: 8 }, blacktip: { species: 6, L: 3.6, max: 24 } };
 const CLOWN_KEYS = [[0, 0.02, 0.02, 0.02, 0], [0.05, 0.06, 0.09, 0.08, 0], [0.15, 0.1, 0.17, 0.15, 0.01], [0.35, 0.115, 0.21, 0.18, 0.01], [0.55, 0.1, 0.18, 0.15, 0.01], [0.72, 0.06, 0.11, 0.09, 0], [0.84, 0.03, 0.06, 0.05, 0], [0.885, 0.02, 0.05, 0.04, 0]];
 const REEF_KEYS = [[0, 0.02, 0.03, 0.03, 0], [0.06, 0.05, 0.13, 0.11, 0], [0.2, 0.075, 0.26, 0.22, 0], [0.4, 0.08, 0.3, 0.25, 0], [0.6, 0.065, 0.24, 0.2, 0], [0.78, 0.035, 0.12, 0.1, 0], [0.86, 0.022, 0.06, 0.05, 0], [0.885, 0.02, 0.05, 0.04, 0]];
 {
-  const geos = { turtle: buildTurtle(SWIMSP.turtle.L), clown: buildFish(SWIMSP.clown.L, CLOWN_KEYS, 0, false), dolphin: buildDolphin(SWIMSP.dolphin.L), reef: buildFish(SWIMSP.reef.L, REEF_KEYS, 0.6, true) };
+  const geos = { turtle: buildTurtle(SWIMSP.turtle.L), clown: buildFish(SWIMSP.clown.L, CLOWN_KEYS, 0, false), dolphin: buildDolphin(SWIMSP.dolphin.L), reef: buildFish(SWIMSP.reef.L, REEF_KEYS, 0.6, true), gwhite: buildShark('gwhite'), whale: buildShark('whale'), blacktip: buildShark('blacktip') };
   for (const k in geos){
     const g = geos[k], N = SWIMSP[k].max;
     g.setAttribute('aAnim', new THREE.InstancedBufferAttribute(new Float32Array(N * 4), 4).setUsage(THREE.DynamicDrawUsage));
@@ -1966,7 +2075,7 @@ const REEF_KEYS = [[0, 0.02, 0.03, 0.03, 0], [0.06, 0.05, 0.13, 0.11, 0], [0.2, 
     m.instanceMatrix.setUsage(THREE.DynamicDrawUsage); m.frustumCulled = false; m.count = 0; meshes[k] = m;
   }
 }
-const SCENE_MESHES = ['manta', 'eagle', 'sting', 'turtle', 'dolphin', 'clown', 'reef', 'anemone', 'soft', 'fan', 'stag', 'brain', 'plate', 'moon', 'nettle', 'fringe'];
+const SCENE_MESHES = ['manta', 'eagle', 'sting', 'gwhite', 'whale', 'blacktip', 'turtle', 'dolphin', 'clown', 'reef', 'anemone', 'soft', 'fan', 'stag', 'brain', 'plate', 'moon', 'nettle', 'fringe'];
 const CORAL_MESH = ['anemone', 'soft', 'fan', 'stag', 'brain', 'plate'];
 
 // ------------------------------------------------------------------ ribbons (sea nettle tentacles and oral arms)
@@ -2066,7 +2175,7 @@ function applySize(){
 const rays = [], jellies = [];
 const whirl = { on: false, x: 0, y: 0, str: 0, R: 6 };
 const env = { rain: false, sea: 0.5, overcast: 0 };
-const count = () => rays.length + jellies.length + turtles.length + dolphins.length + clowns.length;
+const count = () => rays.length + jellies.length + turtles.length + dolphins.length + clowns.length + sharks.length;
 
 function inBounds(x, y, m){ return Math.abs(x) < world.W / 2 - m && Math.abs(y) < world.H / 2 - m; }
 function seawardPoint(x, y, minD){
@@ -2080,7 +2189,7 @@ function seawardPoint(x, y, minD){
 }
 
 function randomWaterTarget(key){
-  const sp = SPECIES[key]; const need = sp.kind === 'ray' ? sp.minDepth + 0.6 : 2.2;
+  const sp = SPECIES[key]; const need = sp.kind === 'ray' ? sp.minDepth + 0.6 : sp.kind === 'shark' ? SHARK_SP[key].minD + 0.8 : 2.2;
   const yMin = -world.H / 2 + 5, yMax = world.H / 2 - 6;
   for (let i = 0; i < 60; i++){
     const x = (rnd() - 0.5) * (world.W - 14), y = lerp(yMin, yMax, rnd());
@@ -2360,6 +2469,7 @@ function spawn(key, x, y, z, pod){
   else if (sp.kind === 'jelly'){ c = makeJelly(key, x, y, z); jellies.push(c); }
   else if (key === 'turtle'){ c = makeTurtle(x, y, z); turtles.push(c); }
   else if (key === 'dolphin'){ c = makeDolphin(x, y, z, pod); dolphins.push(c); }
+  else if (sp.kind === 'shark'){ c = makeShark(key, x, y, z); sharks.push(c); }
   else { c = makeFish('clown', x, y, z); c.mode = 'hover'; clowns.push(c); }
   updateCounter();
   return c;
@@ -2375,13 +2485,13 @@ function seedSea(){
   seedCreatures(); updateCounter();
 }
 function clearSea(){
-  for (const c of [...rays, ...jellies, ...turtles, ...dolphins, ...clowns]) if (c.mode !== 'held'){ c.removing = true; addDrop(c.x, c.y, 1.2, -0.25); }
+  for (const c of [...rays, ...jellies, ...turtles, ...dolphins, ...clowns, ...sharks]) if (c.mode !== 'held'){ c.removing = true; addDrop(c.x, c.y, 1.2, -0.25); }
   updateCounter();
 }
 
 
 // ------------------------------------------------------------------ turtles, dolphins, clownfish, reef fish and living coral
-const turtles = [], dolphins = [], clowns = [], reefFish = [], corals = [];
+const turtles = [], dolphins = [], clowns = [], reefFish = [], corals = [], sharks = [];
 const pods = [], schools = [];
 const SWIM_KINDS = { turtle: turtles, dolphin: dolphins, clown: clowns };
 const CORAL_MAX = 90;
@@ -2709,12 +2819,81 @@ function seedCreatures(){
   const t = randomWaterTarget('moon'); const tu = spawn('turtle', t.x, t.y, -Math.max(depthAt(t.x, t.y), 0) + 1.5);
   const p = randomWaterTarget('manta'); let pod = null;
   for (let i = 0; i < 3; i++){ const d = spawn('dolphin', p.x - i * 3, p.y + (i % 2 ? 2 : -2), -2, pod); pod = d.pod; }
+  for (const [k, n] of [['whale', 1], ['gwhite', 1], ['blacktip', 2]]) for (let i = 0; i < n; i++){
+    const q = randomWaterTarget(k); const fl = -Math.max(depthAt(q.x, q.y), 0); const sh = spawn(k, q.x, q.y, k === 'blacktip' ? fl + 1.2 : Math.max(fl + 2, -2)); sh.heading = rnd() * TAU; }
   for (const c of corals) if (c.type === 0){ const n = 2 + ((rnd() * 2) | 0);
     for (let i = 0; i < n && count() < CAP - 2; i++){ const f = spawn('clown', c.x + (rnd() - 0.5), c.y + (rnd() - 0.5), c.fl + 0.8); f.host = c; f.mode = 'hover'; } }
 }
 
+// ---- sharks: slow patrols, wide circles, short bursts; species-specific habits
+const SHARK_SP = {
+  gwhite: { cruise: 2.3, burst: 5.6, freq: 0.75, amp: 0.055, minD: 3.2, zr: [-1.2, -5] },
+  whale: { cruise: 1.1, burst: 0, freq: 0.32, amp: 0.045, minD: 3.6, zr: [-0.7, -2.0] },
+  blacktip: { cruise: 2.0, burst: 5.0, freq: 1.1, amp: 0.065, minD: 1.5, zr: null },
+};
+function makeShark(key, x, y, z){
+  const sp = SHARK_SP[key];
+  return Object.assign(baseSwimmer(key, x, y, z), { shark: true, scale: 0.9 + rnd() * 0.25, speed: sp.cruise, amp: sp.amp, tz: z, zT: 0,
+    burstT: 12 + rnd() * 15, burstLeft: 0, circleLeft: 0, circleDir: 1, approachT: 25 + rnd() * 30, restT: 15 + rnd() * 20, wakeT: 0, scT: 0, home: null });
+}
+function updateShark(s, dt, t){
+  const sp = SHARK_SP[s.sp], L = SWIMSP[s.sp].L * s.scale;
+  s.phase += dt * TAU * sp.freq * (s.mode === 'held' ? 0.6 : 0.6 + 0.45 * s.speed / sp.cruise);
+  if (swimAir(s, dt, t, SPECIES[s.sp].splash)){ s.amp = lerp(s.amp, 0.07, dt * 2); s.turnC = 0; return; }
+  const depth = depthAt(s.x, s.y), fl = -Math.max(depth, 0); s.modeT += dt;
+  let tg = sp.cruise, tz = s.tz;
+  s.turnT -= dt;
+  if (s.turnT <= 0){ if (rnd() < 0.35){ s.circleLeft = 8 + rnd() * 8; s.circleDir = rnd() < 0.5 ? -1 : 1; } s.turnTarget = (rnd() - 0.5) * 0.4; s.turnT = 6 + rnd() * 6; }
+  let desired = s.circleLeft > 0 ? 0.3 * s.circleDir * (s.sp === 'whale' ? 0.55 : 1) : s.turnTarget;
+  if (s.circleLeft > 0) s.circleLeft -= dt;
+  if (s.sp === 'blacktip' && world.patches && world.patches.length){
+    if (!s.home || rnd() < dt * 0.02) s.home = world.patches[(rnd() * world.patches.length) | 0];
+    const dx = s.home.x - s.x, dy = s.home.y - s.y, dd = Math.hypot(dx, dy);
+    if (dd > s.home.r + 7) desired = clamp(angDiff(Math.atan2(dy, dx), s.heading) * 1.2, -0.6, 0.6);
+    else if (s.circleLeft <= 0 && rnd() < dt * 0.15){ s.circleLeft = 6 + rnd() * 6; s.circleDir = rnd() < 0.5 ? -1 : 1; }
+  }
+  s.zT -= dt; if (s.zT <= 0){ s.zT = 6 + rnd() * 8; s.tz = sp.zr ? lerp(sp.zr[0], sp.zr[1], rnd()) : fl + 0.8 + rnd() * 1.2; }
+  if (s.sp === 'blacktip') tz = clamp(s.tz, fl + 0.7, fl + 2.2);
+  s.burstT -= dt; if (sp.burst && s.burstT <= 0 && s.mode === 'swim'){ s.burstLeft = 1.2 + rnd() * 1.3; s.burstT = 15 + rnd() * 20; }
+  if (s.burstLeft > 0){ s.burstLeft -= dt; tg = sp.burst; }
+  if (s.sp === 'gwhite'){ s.approachT -= dt; if (s.approachT <= 0 && s.mode === 'swim'){ s.mode = 'approach'; s.modeT = 0; s.approachT = 35 + rnd() * 30; } }
+  if (s.mode === 'approach'){
+    desired = clamp(angDiff(Math.atan2(-s.y, -s.x), s.heading) * 1.2, -0.5, 0.5); tz = -0.8; tg = 1.9;
+    if (s.modeT > 7 || Math.hypot(s.x, s.y) < 6){ s.mode = 'swim'; s.tz = -3.5; s.circleLeft = 5; s.circleDir = rnd() < 0.5 ? -1 : 1; }
+  }
+  if (s.sp === 'blacktip'){ s.restT -= dt; if (s.mode === 'swim' && s.restT <= 0 && depth > 1.2 && depth < 7){ s.mode = 'rest'; s.modeT = 0; s.restDur = 6 + rnd() * 6; } }
+  if (s.mode === 'rest'){ tg = 0.35; tz = fl + 0.45; desired *= 0.3; if (s.modeT > s.restDur){ s.mode = 'swim'; s.restT = 20 + rnd() * 25; } }
+  const av = avoidHeading(s, 4 + L * 0.6 + s.speed, sp.minD, 3 + L * 0.2, dt); if (av !== null) desired = clamp(angDiff(av, s.heading) * 1.6, -0.9, 0.9);
+  let ax = 0, ay = 0;
+  for (const o of [...rays, ...dolphins, ...turtles, ...sharks]){
+    if (o === s || o.removing) continue;
+    const big = o.shark ? SWIMSP[o.sp].L * o.scale : o.kind === 'ray' ? SPECIES[o.sp].span * o.scale : o.kind === 'dolphin' ? 5 : 3.6;
+    const dx = s.x - o.x, dy = s.y - o.y, dd = Math.hypot(dx, dy), rr = (L + big) * 0.5 + 1;
+    if (dd < rr && dd > 0.01 && Math.abs(s.z - o.z) < 3){ ax += dx / dd * (rr - dd); ay += dy / dd * (rr - dd); }
+  }
+  if (ax || ay) desired = clamp(desired + angDiff(Math.atan2(ay, ax), s.heading) * 0.8, -0.9, 0.9);
+  applyVortex(s, dt, s.sp === 'whale' ? 0.2 : 0.4);
+  const maxTurn = s.sp === 'whale' ? 0.32 : 0.8;
+  s.turn += (clamp(desired, -maxTurn, maxTurn) - s.turn) * Math.min(1, dt * 0.9); s.heading += s.turn * dt;
+  s.speed += (tg - s.speed) * Math.min(1, dt * (s.burstLeft > 0 ? 1.5 : 0.6));
+  const zMax = -0.12 - L * (s.sp === 'blacktip' ? 0.09 : 0.115);
+  tz = clamp(tz, Math.min(fl + 0.4 + L * 0.04, zMax), zMax);
+  s.pitch = lerp(s.pitch, clamp((tz - s.z) * 0.15, -0.3, 0.3), Math.min(1, dt * 1.2));
+  s.z = clamp(s.z + Math.sin(s.pitch) * s.speed * dt, Math.min(fl + 0.3, zMax), zMax);
+  const hs = Math.cos(s.pitch) * s.speed; s.x += Math.cos(s.heading) * hs * dt; s.y += Math.sin(s.heading) * hs * dt;
+  s.roll = lerp(s.roll, -s.turn * 0.7 - (s.vort || 0) * 0.5, Math.min(1, dt * 2));
+  s.amp = lerp(s.amp, sp.amp * (s.burstLeft > 0 ? 1.4 : 1) * (s.mode === 'rest' ? 0.5 : 1), Math.min(1, dt * 2));
+  s.turnC = clamp(s.turn * 0.5, -0.5, 0.5); s.a2x = -s.pitch * 0.4; s.a2y = clamp(s.turn * 0.35, -0.3, 0.3);
+  if (s.z > zMax - 1.0){ s.wakeT -= dt; if (s.wakeT <= 0){ s.wakeT = 0.1; const k = clamp((s.z - zMax + 1.0) / 1.0, 0, 1);
+    addDrop(s.x - Math.cos(s.heading) * L * 0.05, s.y - Math.sin(s.heading) * L * 0.05, 0.5 + L * 0.06, -0.15 * k * (1 + s.speed * 0.2)); } }
+  s.scT -= dt; if (s.scT <= 0){ s.scT = 0.4;
+    for (const f of [...reefFish, ...clowns]){ const dx = f.x - s.x, dy = f.y - s.y, dd = Math.hypot(dx, dy);
+      if (dd < L * 0.7 && dd > 0.01){ f.vx += dx / dd * 4; f.vy += dy / dd * 4; if (f.kind === 'clown' && f.host){ f.mode = 'hide'; f.hideT = 2; } } } }
+}
+
 // write instances
 function writeInstances(){
+  for (const k of ['gwhite', 'whale', 'blacktip']) writeSwim(k, sharks.filter(c => c.sp === k));
   writeSwim('turtle', turtles); writeSwim('dolphin', dolphins); writeSwim('clown', clowns); writeSwim('reef', reefFish); writeCorals();
   const cnt = { manta: 0, eagle: 0, sting: 0 };
   for (const r of rays){
@@ -2931,6 +3110,7 @@ function updateCounter(){
   if (nt) parts.push(`${nt} ${nt === 1 ? 'schildpad' : 'schildpadden'}`);
   if (nc) parts.push(`${nc} ${nc === 1 ? 'clownvis' : 'clownvissen'}`);
   if (nd) parts.push(`${nd} ${nd === 1 ? 'dolfijn' : 'dolfijnen'}`);
+  const nh = live(sharks); if (nh) parts.push(`${nh} ${nh === 1 ? 'haai' : 'haaien'}`);
   if (nk) parts.push(`${nk} ${nk === 1 ? 'koraal' : 'koralen'}`);
   $('#counter').textContent = parts.join(' · ');
   const full = count() >= CAP, reefFull = corals.length >= CORAL_MAX;
@@ -3049,7 +3229,7 @@ function releaseHeld(c){
   const sp = SPECIES[c.sp];
   c.mode = 'fly'; c.vz = 0; c.vx = clamp(c.vx, -12, 12) * 0.35; c.vy = clamp(c.vy, -12, 12) * 0.35; c.spinV = 0;
   const tf = Math.sqrt(2 * c.z / G); const lx = c.x + c.vx * tf, ly = c.y + c.vy * tf;
-  const need = sp.kind === 'ray' ? sp.minDepth * 0.8 : sp.kind === 'dolphin' ? 2.6 : 1.4;
+  const need = sp.kind === 'ray' ? sp.minDepth * 0.8 : sp.kind === 'dolphin' ? 2.6 : sp.kind === 'shark' ? SHARK_SP[c.sp].minD : 1.4;
   if (depthAt(lx, ly) < need || !inBounds(lx, ly, 1)){ const g = seawardPoint(lx, ly, need + 0.4); c.vx = (g.x - c.x) / tf; c.vy = (g.y - c.y) / tf; }
 }
 
@@ -3179,7 +3359,7 @@ const sandMat = new THREE.ShaderMaterial({ vertexShader: SAND_VS, fragmentShader
 const THUMB_Z = -20;
 function oneOf(geo, mat){ const m = new THREE.InstancedMesh(geo, mat, 2); m.frustumCulled = false; m.count = 1; m.instanceMatrix.setUsage(THREE.DynamicDrawUsage); return m; }
 function swimGeo(k){
-  const g = k === 'turtle' ? buildTurtle(SWIMSP.turtle.L) : k === 'clown' ? buildFish(SWIMSP.clown.L, CLOWN_KEYS, 0, false) : buildDolphin(SWIMSP.dolphin.L);
+  const g = SHARK_DEF[k] ? buildShark(k) : k === 'turtle' ? buildTurtle(SWIMSP.turtle.L) : k === 'clown' ? buildFish(SWIMSP.clown.L, CLOWN_KEYS, 0, false) : buildDolphin(SWIMSP.dolphin.L);
   g.setAttribute('aAnim', new THREE.InstancedBufferAttribute(new Float32Array(8), 4)); g.setAttribute('aAnim2', new THREE.InstancedBufferAttribute(new Float32Array(8), 4)); return g;
 }
 const CORAL_BUILD = { anemone: buildAnemone, soft: buildSoftCoral, fan: buildSeaFan, stag: buildStaghorn, brain: buildBrain, plate: buildPlate };
@@ -3222,6 +3402,10 @@ function buildThumb(key){
       const d = 5.2 * 1.05 / (2 * tan) / 1.3; look(0, -d * 0.8, d * 0.55);
       update = t => { const ph = t * TAU * 0.9; place(m, 0, 0, 0, Z + 0.12 * Math.sin(ph - 1.2), 0.08 * Math.sin(t * 0.45), 0.12 + 0.1 * Math.sin(t * 0.45), Math.atan2(-0.5, -1) + 0.2 * Math.sin(t * 0.45) - Math.PI / 2, 1);
         a1.setXYZW(0, ph, 0.065, 0.12 * Math.sin(t * 0.45), 0.35); a2.setXYZW(0, 0, 0.1 * Math.sin(t * 0.45), 0, 0); a1.needsUpdate = a2.needsUpdate = true; };
+    } else if (SHARK_DEF[key]){
+      const Ls = SHARK_DEF[key].L, fq = SHARK_SP[key].freq, d = Ls * 1.0 / (2 * tan) / 1.25; look(0, -d * 0.82, d * 0.5);
+      update = t => { const ph = t * TAU * fq * 1.2; place(m, 0, 0, 0, Z, 0.04 * Math.sin(t * 0.4), 0.12 + 0.08 * Math.sin(t * 0.4), Math.atan2(-0.45, -1) + 0.15 * Math.sin(t * 0.4) - Math.PI / 2, 1);
+        a1.setXYZW(0, ph, SHARK_SP[key].amp, 0.08 * Math.sin(t * 0.4), 0.35); a2.setXYZW(0, 0, 0.05 * Math.sin(t * 0.4), 0, 0); a1.needsUpdate = a2.needsUpdate = true; };
     } else {
       m.count = 2; const an = oneOf(coralGeo('anemone'), meshes.anemone.material); scene.add(an); place(an, 0, 0, 0, Z - 0.35, 0, 0, 0, 0.75); an.geometry.attributes.aI.setXYZW(0, 0.4, 1, 1, 0); an.geometry.attributes.aI.needsUpdate = true;
       const d = 2.6 / (2 * tan); look(0, -d * 0.85, d * 0.5, 0, 0.1);
@@ -3402,7 +3586,7 @@ function frame(dt){
   for (let i = jellies.length - 1; i >= 0; i--){ const j = jellies[i]; updateJelly(j, dt, time);
     if (j.removing){ j.fade -= dt * 1.6; if (j.fade <= 0){ jellies.splice(i, 1); updateCounter(); } } }
   updateSchools(dt);
-  for (const [list, fn] of [[turtles, updateTurtle], [dolphins, updateDolphin], [clowns, updateFish]]){
+  for (const [list, fn] of [[turtles, updateTurtle], [dolphins, updateDolphin], [clowns, updateFish], [sharks, updateShark]]){
     for (let i = list.length - 1; i >= 0; i--){ const c = list[i]; fn(c, dt, time);
       if (c.removing){ c.fade -= dt * 1.6; if (c.fade <= 0){ list.splice(i, 1);
         if (c.pod){ c.pod.members.splice(c.pod.members.indexOf(c), 1); if (!c.pod.members.length) pods.splice(pods.indexOf(c.pod), 1); }
@@ -3431,7 +3615,7 @@ function frame(dt){
   compMat.uniforms.tShadow.value = shadowRT.texture; compMat.uniforms.tUnder.value = underRT.texture;
   renderer.setRenderTarget(null); renderer.setClearColor(0x0b3a5c, 1); renderer.clear(); renderer.render(compScene, quadCam);
   // above the water
-  const anyAir = rays.some(r => r.z > -0.5) || jellies.some(j => j.z > -0.5) || turtles.some(c => c.z > -0.6) || dolphins.some(c => c.z > -0.8) || clowns.some(c => c.z > -0.4) || corals.some(c => c.z > 0) || airFx.items.length > 0;
+  const anyAir = sharks.some(c => c.z > -1.6) || rays.some(r => r.z > -0.5) || jellies.some(j => j.z > -0.5) || turtles.some(c => c.z > -0.6) || dolphins.some(c => c.z > -0.8) || clowns.some(c => c.z > -0.4) || corals.some(c => c.z > 0) || airFx.items.length > 0;
   if (anyAir){ setPass(1); airFx.mesh.visible = airFx.items.length > 0; renderer.clearDepth(); renderer.render(scene, camera); }
   LiveThumbs.render(time, dt);
 }
@@ -3466,7 +3650,7 @@ addEventListener('resize', () => { clearTimeout(rsT); rsT = setTimeout(() => {
   seedReef();
   for (const c of planted){ c.fl = -Math.max(depthAt(c.x, c.y), 0); if (c.anchored) c.z = c.fl; corals.push(c); }
   updateCounter();
-  for (const c of [...rays, ...jellies, ...turtles, ...dolphins, ...clowns]){ c.x *= world.W / oldW; c.y *= world.H / oldH;
+  for (const c of [...rays, ...jellies, ...turtles, ...dolphins, ...clowns, ...sharks]){ c.x *= world.W / oldW; c.y *= world.H / oldH;
     if (['swim', 'drift', 'rest', 'hover', 'hide', 'glide', 'descend', 'surface', 'breathe', 'approach'].includes(c.mode)){ const need = c.kind === 'ray' ? SPECIES[c.sp].minDepth : 1.5;
       if (depthAt(c.x, c.y) < need){ const p = seawardPoint(c.x, c.y, need + 0.5); c.x = p.x; c.y = p.y; }
       const fl = -Math.max(depthAt(c.x, c.y), 0); if (c.z < fl + 0.3) c.z = fl + 0.4; if (c.chains) resetChains(c); } }
