@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="nl">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -60,7 +60,7 @@ button:focus-visible{outline:2px solid var(--sun);outline-offset:2px;}
 .thumb{width:100%;aspect-ratio:4/3;max-width:100%;border-radius:11px;display:grid;place-items:center;overflow:hidden;
   background:radial-gradient(120% 90% at 50% 25%,rgba(150,235,230,.55),rgba(20,110,150,.35) 70%,rgba(10,60,100,.4));}
 .thumb img{width:100%;height:100%;object-fit:contain;pointer-events:none;-webkit-user-drag:none;}
-.card .nm{font:500 14px/1.15 var(--display);text-align:center;color:var(--paper);margin-top:4px;text-shadow:0 1px 2px rgba(0,30,50,.4);}
+.card .nm{font:500 14px/1.15 var(--display);hyphens:manual;overflow-wrap:break-word;max-width:100%;text-align:center;color:var(--paper);margin-top:4px;text-shadow:0 1px 2px rgba(0,30,50,.4);}
 .card .sci{font:italic 400 11px/1.2 var(--ui);color:rgba(245,251,250,.78);text-align:center;}
 #showUI{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));right:calc(10px + env(safe-area-inset-right,0px));
   font:600 12px/1 var(--ui);color:var(--paper);padding:8px 12px;border-radius:999px;cursor:pointer;opacity:.55;display:flex;gap:6px;align-items:center;}
@@ -86,28 +86,28 @@ button:focus-visible{outline:2px solid var(--sun);outline-offset:2px;}
 </style>
 </head>
 <body>
-<canvas id="sea" aria-label="Top-down view of a tropical sea with a small beach. Tap or drag on the water to make ripples."></canvas>
+<canvas id="sea" aria-label="Bovenaanzicht van een tropische zee met een klein strand. Tik of sleep op het water om rimpelingen te maken."></canvas>
 <div id="ui">
   <div class="top">
     <div class="brand">
       <h1>Ocean Shallows</h1>
-      <p>Tap a card to throw a creature into the sea. Drag a card to hold it above the water, then let go.</p>
+      <p>Tik op een kaart om een dier in zee te gooien. Sleep een kaart om het boven het water vast te houden en laat dan los.</p>
     </div>
-    <nav class="controls glass" aria-label="Sea controls">
-      <button id="bRain" type="button" aria-pressed="false" title="Rain (R)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M7 15a4.5 4.5 0 1 1 1.2-8.8A5.5 5.5 0 0 1 18.5 9 3.5 3.5 0 0 1 18 16H7"/><path d="M8 19l-1 2M12 19l-1 2M16 19l-1 2"/></svg><span>Rain</span><kbd>R</kbd></button>
-      <button id="bWhirl" type="button" aria-pressed="false" title="Whirlpool (W)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 12a1.5 1.5 0 1 1 1.5-1.5c0 2.5-3.5 4-6 2.5S4.5 7.5 8 5.5s9-1 10.5 3S17 18 12 19.5 3 17 3 12"/></svg><span>Whirlpool</span><kbd>W</kbd></button>
-      <button id="bCalm" type="button" aria-pressed="false" title="Calm (C)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 10c2 0 2-1.5 4.5-1.5S9.5 10 12 10s2.5-1.5 4.5-1.5S19 10 21 10M3 15h18"/></svg><span>Calm</span><kbd>C</kbd></button>
-      <button id="bClear" type="button" title="Clear sea"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M6 6l2 2M16 16l2 2M6 18l2-2M16 8l2-2"/></svg><span>Clear sea</span></button>
-      <button id="bSound" type="button" aria-pressed="false" title="Sound (M)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path id="sndWaves" d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg><span>Sound</span><kbd>M</kbd></button>
-      <button id="bHide" type="button" title="Hide UI (H)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/><path d="M4 20L20 4"/></svg><span>Hide UI</span><kbd>H</kbd></button>
+    <nav class="controls glass" aria-label="Bediening van de zee">
+      <button id="bRain" type="button" aria-pressed="false" title="Regen (R)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M7 15a4.5 4.5 0 1 1 1.2-8.8A5.5 5.5 0 0 1 18.5 9 3.5 3.5 0 0 1 18 16H7"/><path d="M8 19l-1 2M12 19l-1 2M16 19l-1 2"/></svg><span>Regen</span><kbd>R</kbd></button>
+      <button id="bWhirl" type="button" aria-pressed="false" title="Draaikolk (W)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 12a1.5 1.5 0 1 1 1.5-1.5c0 2.5-3.5 4-6 2.5S4.5 7.5 8 5.5s9-1 10.5 3S17 18 12 19.5 3 17 3 12"/></svg><span>Draaikolk</span><kbd>W</kbd></button>
+      <button id="bCalm" type="button" aria-pressed="false" title="Kalm (C)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 10c2 0 2-1.5 4.5-1.5S9.5 10 12 10s2.5-1.5 4.5-1.5S19 10 21 10M3 15h18"/></svg><span>Kalm</span><kbd>C</kbd></button>
+      <button id="bClear" type="button" title="Zee leegmaken"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M6 6l2 2M16 16l2 2M6 18l2-2M16 8l2-2"/></svg><span>Zee leegmaken</span></button>
+      <button id="bSound" type="button" aria-pressed="false" title="Geluid (M)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path id="sndWaves" d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg><span>Geluid</span><kbd>M</kbd></button>
+      <button id="bHide" type="button" title="Menu verbergen (H)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/><path d="M4 20L20 4"/></svg><span>Menu verbergen</span><kbd>H</kbd></button>
     </nav>
   </div>
   <div class="bottom">
-    <div class="counter glass" id="counter" aria-live="polite">0 rays · 0 jellies</div>
-    <div class="dock glass" id="dock" role="toolbar" aria-label="Creatures"></div>
+    <div class="counter glass" id="counter" aria-live="polite">0 roggen · 0 kwallen</div>
+    <div class="dock glass" id="dock" role="toolbar" aria-label="Dieren"></div>
   </div>
 </div>
-<button id="showUI" class="glass" type="button" hidden>Show UI <kbd>H</kbd></button>
+<button id="showUI" class="glass" type="button" hidden>Menu tonen <kbd>H</kbd></button>
 <div id="toast" role="status" aria-live="polite"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
@@ -130,13 +130,13 @@ function vnoise(x, y){ const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi
 function fbm(x, y, o){ o = o || 4; let s = 0, a = 0.5, f = 1; for (let i = 0; i < o; i++){ s += a * vnoise(x * f + i * 17.3, y * f - i * 9.1); f *= 2.03; a *= 0.5; } return s; }
 function mulberry(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 
-if (!window.THREE){ fail('The 3D library did not load. Check your connection and reload the page.'); return; }
+if (!window.THREE){ fail('De 3D-bibliotheek is niet geladen. Controleer je internetverbinding en laad de pagina opnieuw.'); return; }
 function fail(msg){ const d = document.createElement('div'); d.id = 'fail'; d.textContent = msg; document.body.appendChild(d); }
 
 const canvas = $('#sea');
 let renderer;
 try { renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: 'high-performance' }); }
-catch (e) { fail('This page needs WebGL. Try a recent browser with hardware acceleration turned on.'); return; }
+catch (e) { fail('Deze pagina heeft WebGL nodig. Probeer een recente browser met hardwareversnelling aan.'); return; }
 renderer.autoClear = false;
 renderer.extensions.get('EXT_color_buffer_float');
 renderer.extensions.get('EXT_color_buffer_half_float');
@@ -1046,11 +1046,11 @@ function buildPalm(){
 
 // ------------------------------------------------------------------ species
 const SPECIES = {
-  manta:  { kind: 'ray', idx: 0, name: 'Manta', sci: 'Mobula birostris', span: 10.0, len: 5.2, tail: 3.0, sweep: 0.55, thick: 0.055, flap: 0.55, und: 0, flapRate: 0.42, speed: 2.4, minDepth: 2.2, clear: 1.2, zr: [-0.6, -3.2], breach: true, splash: 1.5 },
-  eagle:  { kind: 'ray', idx: 1, name: 'Spotted Eagle Ray', sci: 'Aetobatus narinari', span: 6.4, len: 4.0, tail: 8.5, sweep: 0.42, thick: 0.06, flap: 0.5, und: 0, flapRate: 0.6, speed: 2.9, minDepth: 1.8, clear: 1.0, zr: [-0.8, -4], breach: true, splash: 1.15 },
-  sting:  { kind: 'ray', idx: 2, name: 'Blue-spotted Stingray', sci: 'Taeniura lymma', span: 2.6, len: 3.0, tail: 2.6, sweep: 0.0, thick: 0.07, flap: 0.0, und: 0.55, flapRate: 0.9, speed: 1.5, minDepth: 0.9, clear: 0.25, zr: null, breach: false, splash: 0.7 },
-  moon:   { kind: 'jelly', idx: 0, name: 'Moon Jelly', sci: 'Aurelia aurita', size: 1.45, rate: 0.55, thrust: 1.6, bellH: 0.42, splash: 0.75 },
-  nettle: { kind: 'jelly', idx: 1, name: 'Sea Nettle', sci: 'Chrysaora fuscescens', size: 1.1, rate: 0.75, thrust: 1.9, bellH: 0.72, splash: 0.8 },
+  manta:  { kind: 'ray', idx: 0, name: 'Reuzen\u00ADmanta', sci: 'Mobula birostris', span: 10.0, len: 5.2, tail: 3.0, sweep: 0.55, thick: 0.055, flap: 0.55, und: 0, flapRate: 0.42, speed: 2.4, minDepth: 2.2, clear: 1.2, zr: [-0.6, -3.2], breach: true, splash: 1.5 },
+  eagle:  { kind: 'ray', idx: 1, name: 'Gevlekte adelaars\u00ADrog', sci: 'Aetobatus narinari', span: 6.4, len: 4.0, tail: 8.5, sweep: 0.42, thick: 0.06, flap: 0.5, und: 0, flapRate: 0.6, speed: 2.9, minDepth: 1.8, clear: 1.0, zr: [-0.8, -4], breach: true, splash: 1.15 },
+  sting:  { kind: 'ray', idx: 2, name: 'Blauw\u00ADgespikkelde pijl\u00ADstaartrog', sci: 'Taeniura lymma', span: 2.6, len: 3.0, tail: 2.6, sweep: 0.0, thick: 0.07, flap: 0.0, und: 0.55, flapRate: 0.9, speed: 1.5, minDepth: 0.9, clear: 0.25, zr: null, breach: false, splash: 0.7 },
+  moon:   { kind: 'jelly', idx: 0, name: 'Oorkwal', sci: 'Aurelia aurita', size: 1.45, rate: 0.55, thrust: 1.6, bellH: 0.42, splash: 0.75 },
+  nettle: { kind: 'jelly', idx: 1, name: 'Zeenetel', sci: 'Chrysaora fuscescens', size: 1.1, rate: 0.75, thrust: 1.9, bellH: 0.72, splash: 0.8 },
 };
 const KEYS = ['manta', 'eagle', 'sting', 'moon', 'nettle'];
 const MAXN = CAP;
@@ -1631,17 +1631,17 @@ const toastEl = $('#toast'); let toastT = 0;
 function toast(msg){ toastEl.textContent = msg; toastEl.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('show'), 2600); }
 function updateCounter(){
   const nr = rays.filter(r => !r.removing).length, nj = jellies.filter(j => !j.removing).length;
-  $('#counter').textContent = `${nr} ray${nr === 1 ? '' : 's'} · ${nj} jell${nj === 1 ? 'y' : 'ies'}`;
+  $('#counter').textContent = `${nr} ${nr === 1 ? 'rog' : 'roggen'} · ${nj} ${nj === 1 ? 'kwal' : 'kwallen'}`;
   const full = count() >= CAP;
   document.querySelectorAll('.card').forEach(c => c.setAttribute('aria-disabled', full ? 'true' : 'false'));
 }
-const fullMsg = () => toast(`The sea is full at ${CAP} creatures. Clear the sea to add more.`);
+const fullMsg = () => toast(`De zee is vol: maximaal ${CAP} dieren. Maak de zee leeg om nieuwe toe te voegen.`);
 const dock = $('#dock');
 const cards = {};
 for (const key of KEYS){
   const sp = SPECIES[key];
   const b = document.createElement('button'); b.type = 'button'; b.className = 'card'; b.dataset.sp = key;
-  b.setAttribute('aria-label', `${sp.name}: tap to throw, drag to place`);
+  b.setAttribute('aria-label', `${sp.name}: tik om te gooien, sleep om neer te zetten`);
   b.innerHTML = `<span class="thumb"><img alt=""></span><span class="nm">${sp.name}</span><span class="sci">${sp.sci}</span>`;
   dock.appendChild(b); cards[key] = b;
 }
@@ -1731,7 +1731,7 @@ function setRain(v){ env.rain = v; bRain.setAttribute('aria-pressed', v); }
 function setCalm(v){ env.calm = v; bCalm.setAttribute('aria-pressed', v); }
 function setWhirl(v){
   whirl.on = v; bWhirl.setAttribute('aria-pressed', v);
-  if (v){ whirl.R = clamp(world.a * 0.09, 4, 8); const p = seawardPoint(world.W * 0.12, -world.H * 0.02, 4); whirl.x = p.x; whirl.y = p.y; toast('Drag the whirlpool to move it.'); }
+  if (v){ whirl.R = clamp(world.a * 0.09, 4, 8); const p = seawardPoint(world.W * 0.12, -world.H * 0.02, 4); whirl.x = p.x; whirl.y = p.y; toast('Sleep de draaikolk om hem te verplaatsen.'); }
   else canvas.style.cursor = 'crosshair';
 }
 function setSound(v){ Snd.setOn(v); bSound.setAttribute('aria-pressed', v); $('#sndWaves').style.opacity = v ? 1 : 0.25; }
