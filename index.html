@@ -227,7 +227,9 @@ input[type=range]:focus-visible{outline:2px solid var(--sun);outline-offset:3px;
   .brand p{display:none;}
 }
 @media (prefers-reduced-motion:reduce){ .panel,.rbtn,.row,.sw::after,.x,.ghost{transition:none;} }
-@media (hover:none),(max-width:700px){ .kb,.row kbd,.srow kbd,.ghost kbd{display:none;} }
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
+.slider.vol{padding:2px 14px 4px;}
+.rl{justify-content:center;}
 
 
 </style>
@@ -237,7 +239,6 @@ input[type=range]:focus-visible{outline:2px solid var(--sun);outline-offset:3px;
 <div id="ui">
   <div class="brand">
     <h1>Ocean Shallows</h1>
-    <p>Open <strong>Dieren</strong> in het menu om een dier in zee te gooien of koraal te planten. Tik of sleep op het water voor rimpelingen.</p>
   </div>
   <nav id="rail" class="rail glass" aria-label="Menu">
     <button class="rbtn" id="mWeather" type="button" aria-expanded="false" aria-controls="pWeather"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 3.5v1.3M3.8 8.2h1.3M5.2 4.9l.9.9M11.8 4.9l-.9.9"/><path d="M11.2 9.6a3 3 0 0 0-5.6 1"/><path d="M7.5 19.5a4 4 0 1 1 1-7.9 5 5 0 0 1 9.6 1.6 3.2 3.2 0 0 1-.6 6.3z"/></svg><span>Weer</span></button>
@@ -247,10 +248,10 @@ input[type=range]:focus-visible{outline:2px solid var(--sun);outline-offset:3px;
   <section id="pWeather" class="panel glass" hidden aria-labelledby="pWeatherT">
     <header class="ph"><h2 id="pWeatherT">Weer</h2><button class="x" type="button" aria-label="Sluiten"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
     <div class="pbody">
-      <button class="row" id="bRain" type="button" role="switch" aria-checked="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15a4.5 4.5 0 1 1 1.2-8.8A5.5 5.5 0 0 1 18.5 9 3.5 3.5 0 0 1 18 16H7"/><path d="M8 19l-1 2M12 19l-1 2M16 19l-1 2"/></svg><span class="rl">Regen<small>Druppels, rimpels en een grijzere lucht</small></span><kbd>R</kbd><span class="sw" aria-hidden="true"></span></button>
-      <button class="row" id="bWhirl" type="button" role="switch" aria-checked="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12a1.5 1.5 0 1 1 1.5-1.5c0 2.5-3.5 4-6 2.5S4.5 7.5 8 5.5s9-1 10.5 3S17 18 12 19.5 3 17 3 12"/></svg><span class="rl">Draaikolk<small>Sleep hem over het water</small></span><kbd>W</kbd><span class="sw" aria-hidden="true"></span></button>
+      <button class="row" id="bRain" type="button" role="switch" aria-checked="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15a4.5 4.5 0 1 1 1.2-8.8A5.5 5.5 0 0 1 18.5 9 3.5 3.5 0 0 1 18 16H7"/><path d="M8 19l-1 2M12 19l-1 2M16 19l-1 2"/></svg><span class="rl">Regen</span><span class="sw" aria-hidden="true"></span></button>
+      <button class="row" id="bWhirl" type="button" role="switch" aria-checked="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12a1.5 1.5 0 1 1 1.5-1.5c0 2.5-3.5 4-6 2.5S4.5 7.5 8 5.5s9-1 10.5 3S17 18 12 19.5 3 17 3 12"/></svg><span class="rl">Draaikolk</span><span class="sw" aria-hidden="true"></span></button>
       <div class="slider">
-        <div class="srow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9c2 0 2-1.5 4.5-1.5S9.5 9 12 9s2.5-1.5 4.5-1.5S19 9 21 9M3 15c2 0 2-1.5 4.5-1.5S9.5 15 12 15s2.5-1.5 4.5-1.5S19 15 21 15"/></svg><label class="rl" for="seaState">Zeegang<small id="seaLabel">Normaal</small></label><kbd>C</kbd></div>
+        <div class="srow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9c2 0 2-1.5 4.5-1.5S9.5 9 12 9s2.5-1.5 4.5-1.5S19 9 21 9M3 15c2 0 2-1.5 4.5-1.5S9.5 15 12 15s2.5-1.5 4.5-1.5S19 15 21 15"/></svg><label class="rl" for="seaState">Zeegang<small id="seaLabel" class="sr-only">Normaal</small></label></div>
         <input type="range" id="seaState" class="sea" min="0" max="100" value="50" aria-describedby="seaLabel">
         <div class="scale" aria-hidden="true"><span>Kalm</span><span>Ruig</span></div>
       </div>
@@ -260,30 +261,25 @@ input[type=range]:focus-visible{outline:2px solid var(--sun);outline-offset:3px;
     <header class="ph"><div><h2 id="pAnimalsT">Dieren</h2><p class="counter" id="counter" aria-live="polite">0 roggen · 0 kwallen</p></div><button class="x" type="button" aria-label="Sluiten"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
     <div class="pbody" id="animalsBody">
       <div class="dock" id="dock" aria-label="Dieren en koraal"></div>
-      <p class="hint">Tik op een kaart om te gooien of te planten. Sleep een kaart om hem boven het water vast te houden en laat los.</p>
       <button id="bClear" class="ghost" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M6 6l2 2M16 16l2 2M6 18l2-2M16 8l2-2"/></svg>Zee leegmaken</button>
     </div>
   </section>
   <section id="pSettings" class="panel glass" hidden aria-labelledby="pSettingsT">
     <header class="ph"><h2 id="pSettingsT">Instellingen</h2><button class="x" type="button" aria-label="Sluiten"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
     <div class="pbody">
-      <p class="sec">Geluid</p>
-      <button class="row" id="bSound" type="button" role="switch" aria-checked="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path id="sndWaves" d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg><span class="rl">Geluid<small>Branding, plonzen en regen</small></span><kbd>M</kbd><span class="sw" aria-hidden="true"></span></button>
-      <div class="slider vol"><label class="vl" for="sfxVol">Volume geluid</label><input type="range" id="sfxVol" min="0" max="100" value="80"></div>
-      <button class="row" id="bMusic" type="button" role="switch" aria-checked="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg><span class="rl">Muziek<small>Rustige lagune-muziek</small></span><kbd>U</kbd><span class="sw" aria-hidden="true"></span></button>
-      <div class="slider vol"><label class="vl" for="musicVol">Volume muziek</label><input type="range" id="musicVol" min="0" max="100" value="70"></div>
+      <button class="row" id="bSound" type="button" role="switch" aria-checked="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path id="sndWaves" d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg><span class="rl">Geluid</span><span class="sw" aria-hidden="true"></span></button>
+      <div class="slider vol"><label class="sr-only" for="sfxVol">Volume geluid</label><input type="range" id="sfxVol" min="0" max="100" value="80"></div>
+      <button class="row" id="bMusic" type="button" role="switch" aria-checked="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg><span class="rl">Muziek</span><span class="sw" aria-hidden="true"></span></button>
+      <div class="slider vol"><label class="sr-only" for="musicVol">Volume muziek</label><input type="range" id="musicVol" min="0" max="100" value="70"></div>
       <p class="sec" id="qLabel">Beeldkwaliteit</p>
       <div class="seg" role="radiogroup" aria-labelledby="qLabel">
         <button type="button" role="radio" data-q="auto" aria-checked="true">Automatisch</button><button type="button" role="radio" data-q="high" aria-checked="false">Hoog</button><button type="button" role="radio" data-q="low" aria-checked="false">Zuinig</button>
       </div>
-      <p class="sec">Weergave</p>
-      <button id="bHide" class="ghost" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/><path d="M4 20L20 4"/></svg>Menu verbergen <kbd>H</kbd></button>
-      <p class="sec kb">Sneltoetsen</p>
-      <dl class="keys kb"><dt><kbd>R</kbd></dt><dd>Regen</dd><dt><kbd>W</kbd></dt><dd>Draaikolk</dd><dt><kbd>C</kbd></dt><dd>Kalme zee aan of uit</dd><dt><kbd>M</kbd></dt><dd>Geluid</dd><dt><kbd>U</kbd></dt><dd>Muziek</dd><dt><kbd>H</kbd></dt><dd>Menu verbergen of tonen</dd><dt><kbd>Esc</kbd></dt><dd>Paneel sluiten</dd></dl>
+      <button id="bHide" class="ghost" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/><path d="M4 20L20 4"/></svg>Menu verbergen</button>
     </div>
   </section>
 </div>
-<button id="showUI" class="glass" type="button" hidden>Menu tonen <kbd>H</kbd></button>
+<button id="showUI" class="glass" type="button" hidden>Menu tonen</button>
 <div id="toast" role="status" aria-live="polite"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
@@ -2953,7 +2949,7 @@ for (const cat of CATS){
     const sp = SPECIES[key];
     const b = document.createElement('button'); b.type = 'button'; b.className = 'card'; b.dataset.sp = key; b.dataset.cat = cat.id;
     b.setAttribute('aria-label', sp.kind === 'coral' ? `${sp.name}: tik om te planten, sleep om neer te zetten` : `${sp.name}: tik om te gooien, sleep om neer te zetten`);
-    b.innerHTML = `<span class="thumb"><img alt=""></span><span class="nm">${sp.name}</span><span class="sci">${sp.sci}</span>`;
+    b.innerHTML = `<span class="thumb"><img alt=""></span><span class="nm">${sp.name}</span>`;
     cardRow.appendChild(b); cards[key] = b;
   }
 }
@@ -3090,7 +3086,7 @@ const bRain = $('#bRain'), bWhirl = $('#bWhirl'), bSound = $('#bSound'), bMusic 
 function setRain(v){ env.rain = v; bRain.setAttribute('aria-checked', v); }
 function setWhirl(v){
   whirl.on = v; bWhirl.setAttribute('aria-checked', v);
-  if (v){ whirl.R = clamp(world.a * 0.09, 4, 8); const p = seawardPoint(world.W * 0.12, -world.H * 0.02, 4); whirl.x = p.x; whirl.y = p.y; if (underUI(p.x, p.y)){ const q = seawardPoint(-world.W * 0.1, -world.H * 0.05, 4); whirl.x = q.x; whirl.y = q.y; } toast('Sleep de draaikolk om hem te verplaatsen.'); }
+  if (v){ whirl.R = clamp(world.a * 0.09, 4, 8); const p = seawardPoint(world.W * 0.12, -world.H * 0.02, 4); whirl.x = p.x; whirl.y = p.y; if (underUI(p.x, p.y)){ const q = seawardPoint(-world.W * 0.1, -world.H * 0.05, 4); whirl.x = q.x; whirl.y = q.y; } }
   else canvas.style.cursor = 'crosshair';
 }
 const SEA_WORDS = [[0.12, 'Spiegelglad'], [0.3, 'Kalm'], [0.45, 'Rustig'], [0.6, 'Normaal'], [0.8, 'Woelig'], [1.01, 'Ruig']];
