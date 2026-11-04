@@ -94,6 +94,52 @@ button:focus-visible{outline:2px solid var(--sun);outline-offset:2px;}
 }
 @media (max-width:420px){ .brand h1{font-size:20px;} }
 @media (prefers-reduced-motion:reduce){ .card,.controls button,#toast{transition:none;} }
+/* Liquid glass: one translucent material per group, a bright specular rim, a light that follows the pointer,
+   springy press feedback and a selection pill that slides between tabs. */
+:root{--lg-edge:rgba(255,255,255,.22);--lg-shadow:0 12px 36px rgba(2,28,48,.30),0 2px 8px rgba(2,28,48,.14);--spring:cubic-bezier(.34,1.56,.64,1);
+  --lg-sel:linear-gradient(160deg,rgba(255,238,186,.97),rgba(255,214,122,.9));}
+.glass{position:relative;isolation:isolate;border:1px solid var(--lg-edge);
+  background:linear-gradient(160deg,rgba(255,255,255,.2),rgba(255,255,255,.06) 42%,rgba(255,255,255,.12));
+  -webkit-backdrop-filter:blur(7px) saturate(165%) brightness(1.1);backdrop-filter:blur(7px) saturate(165%) brightness(1.1);
+  box-shadow:var(--lg-shadow),inset 0 1px 0 rgba(255,255,255,.55),inset 0 -1px 1px rgba(255,255,255,.14),inset 0 0 24px rgba(255,255,255,.07);}
+.glass::before{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:1.5px;pointer-events:none;z-index:-1;opacity:.85;
+  background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(255,255,255,.18) 28%,rgba(255,255,255,0) 50%,rgba(255,255,255,.18) 78%,rgba(255,255,255,.6));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;}
+.glass::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;
+  background:radial-gradient(240px circle at var(--lx,22%) var(--ly,-30%),rgba(255,255,255,.22),rgba(255,255,255,0) 65%);}
+.controls button{transition:background .25s,color .25s,box-shadow .25s,transform .4s var(--spring);}
+.controls button:hover:not([aria-pressed="true"]){background:rgba(255,255,255,.14);}
+.controls button:active{transform:scale(.9);}
+.controls button[aria-pressed="true"]{background:var(--lg-sel);color:var(--ink);text-shadow:none;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.85),inset 0 -1px 2px rgba(150,100,0,.18),0 2px 10px rgba(255,200,90,.35);}
+kbd{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.28);}
+.tabs{position:relative;isolation:isolate;align-self:center;flex-wrap:nowrap;gap:2px;padding:3px;border-radius:999px;
+  background:rgba(0,30,50,.14);box-shadow:inset 0 1px 2px rgba(0,20,40,.28),inset 0 -1px 0 rgba(255,255,255,.14);}
+.tab,.tab:hover,.tab[aria-selected="true"]{background:transparent;}
+.tab{transition:color .3s,transform .4s var(--spring);}
+.tab:hover{color:#fff;}
+.tab:active{transform:scale(.92);}
+.tab[aria-selected="true"]{color:var(--ink);text-shadow:none;}
+.tab-ind{position:absolute;top:3px;bottom:3px;left:0;width:0;border-radius:999px;z-index:-1;pointer-events:none;background:var(--lg-sel);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.85),inset 0 -1px 2px rgba(150,100,0,.16),0 2px 10px rgba(255,200,90,.35);
+  transition:transform .55s var(--spring),width .55s var(--spring);}
+.tab-ind.still{transition:none;}
+.card{border-radius:15px;border:1px solid rgba(255,255,255,.16);background:linear-gradient(170deg,rgba(255,255,255,.13),rgba(255,255,255,.04));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.32);transition:transform .45s var(--spring),background .25s;}
+.card:hover{transform:translateY(-3px);background:linear-gradient(170deg,rgba(255,255,255,.22),rgba(255,255,255,.07));}
+.card:active{transform:scale(.95);}
+.card.lifting{opacity:.55;transform:scale(.95);}
+.thumb{border-radius:10px;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),inset 0 -8px 16px rgba(0,30,60,.18);}
+#showUI{opacity:.8;}
+#toast{background:linear-gradient(160deg,rgba(255,255,255,.92),rgba(240,250,250,.82));-webkit-backdrop-filter:blur(12px) saturate(180%);backdrop-filter:blur(12px) saturate(180%);
+  border:1px solid rgba(255,255,255,.7);border-radius:999px;box-shadow:var(--lg-shadow),inset 0 1px 0 #fff;}
+@media (max-width:640px){ .card{border-radius:12px;} .thumb{border-radius:8px;} }
+@media (prefers-reduced-transparency:reduce){
+  .glass{background:rgba(14,52,78,.94);-webkit-backdrop-filter:none!important;backdrop-filter:none!important;}
+  .glass::after{display:none;}
+}
+@media (prefers-reduced-motion:reduce){ .tab-ind,.tab,.card,.controls button{transition:none;} }
+
 </style>
 </head>
 <body>
@@ -2790,8 +2836,12 @@ for (const cat of CATS){
     cardRow.appendChild(b); cards[key] = b;
   }
 }
+const tabInd = document.createElement('span'); tabInd.className = 'tab-ind still'; tabInd.setAttribute('aria-hidden', 'true'); tabRow.prepend(tabInd);
+let curCat = 'rays';
+function placeInd(){ const t = tabs[curCat]; if (!t || !t.offsetWidth) return; tabInd.style.width = t.offsetWidth + 'px'; tabInd.style.transform = `translateX(${t.offsetLeft}px)`; }
 function showCat(id){
   if (!CATS.some(c => c.id === id)) id = 'rays';
+  curCat = id; placeInd();
   try { localStorage.setItem('ocean-cat', id); } catch (e) {}
   for (const c of CATS){ tabs[c.id].setAttribute('aria-selected', c.id === id ? 'true' : 'false'); tabs[c.id].tabIndex = c.id === id ? 0 : -1; }
   for (const k of KEYS) cards[k].hidden = cards[k].dataset.cat !== id;
@@ -3075,6 +3125,63 @@ function makeThumbs(){
     cx.putImageData(id, 0, 0); cards[key].querySelector('img').src = cv.toDataURL();
   }
   renderer.setRenderTarget(null); rt.dispose(); setPass(0);
+}
+
+// ------------------------------------------------------------------ liquid glass: pointer light and edge refraction
+{
+  const glassEls = () => document.querySelectorAll('.glass');
+  let lp = null;
+  addEventListener('pointermove', e => { lp = e; }, { passive: true });
+  const light = () => {
+    if (lp){ for (const el of glassEls()){ const r = el.getBoundingClientRect(); if (!r.width) continue;
+      el.style.setProperty('--lx', (lp.clientX - r.left) + 'px'); el.style.setProperty('--ly', (lp.clientY - r.top) + 'px'); } lp = null; }
+    requestAnimationFrame(light);
+  };
+  requestAnimationFrame(light);
+  requestAnimationFrame(() => { placeInd(); requestAnimationFrame(() => tabInd.classList.remove('still')); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(placeInd);
+  addEventListener('resize', placeInd);
+  // Refraction along the rim: Chromium can apply an SVG displacement filter to the backdrop.
+  const brands = navigator.userAgentData && navigator.userAgentData.brands;
+  const chromium = !!(brands && brands.some(b => /Chromium/.test(b.brand)));
+  const reduce = matchMedia('(prefers-reduced-transparency: reduce)').matches;
+  if (chromium && !reduce && window.ResizeObserver){
+    const NS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(NS, 'svg'); svg.setAttribute('width', '0'); svg.setAttribute('height', '0'); svg.setAttribute('aria-hidden', 'true');
+    svg.style.position = 'absolute'; svg.style.pointerEvents = 'none'; document.body.appendChild(svg);
+    const state = new Map(); let uid = 0;
+    const build = el => {
+      const r = el.getBoundingClientRect(), w = Math.round(r.width), h = Math.round(r.height); if (w < 8 || h < 8) return;
+      const st = state.get(el); if (st && st.w === w && st.h === h) return;
+      const rad = Math.min(parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0, h / 2, w / 2), bez = Math.min(18, h * 0.32);
+      const k = 0.5, cw = Math.max(2, Math.round(w * k)), ch = Math.max(2, Math.round(h * k));
+      const cv = document.createElement('canvas'); cv.width = cw; cv.height = ch; const cx = cv.getContext('2d'); const im = cx.createImageData(cw, ch); const D = im.data;
+      for (let py = 0; py < ch; py++) for (let px = 0; px < cw; px++){
+        const x = (px + 0.5) / k, y = (py + 0.5) / k;
+        const qx = Math.abs(x - w / 2) - (w / 2 - rad), qy = Math.abs(y - h / 2) - (h / 2 - rad);
+        const ox = Math.max(qx, 0), oy = Math.max(qy, 0), out = Math.hypot(ox, oy);
+        const d = -(out + Math.min(Math.max(qx, qy), 0) - rad);
+        let dx = 0, dy = 0;
+        if (d >= 0 && d < bez){
+          let nx, ny; if (out > 0){ nx = ox / out; ny = oy / out; } else if (qx > qy){ nx = 1; ny = 0; } else { nx = 0; ny = 1; }
+          nx *= Math.sign(x - w / 2) || 1; ny *= Math.sign(y - h / 2) || 1;
+          const t = 1 - d / bez, m = t * t; dx = -nx * m; dy = -ny * m;
+        }
+        const o = (py * cw + px) * 4; D[o] = 128 + dx * 127; D[o + 1] = 128 + dy * 127; D[o + 2] = 128; D[o + 3] = 255;
+      }
+      cx.putImageData(im, 0, 0);
+      const id = 'lg' + (uid++); const f = document.createElementNS(NS, 'filter');
+      f.setAttribute('id', id); f.setAttribute('x', '0'); f.setAttribute('y', '0'); f.setAttribute('width', '100%'); f.setAttribute('height', '100%'); f.setAttribute('color-interpolation-filters', 'sRGB');
+      const fi = document.createElementNS(NS, 'feImage'); fi.setAttribute('href', cv.toDataURL()); fi.setAttribute('x', '0'); fi.setAttribute('y', '0');
+      fi.setAttribute('width', String(w)); fi.setAttribute('height', String(h)); fi.setAttribute('preserveAspectRatio', 'none'); fi.setAttribute('result', 'map');
+      const dm = document.createElementNS(NS, 'feDisplacementMap'); dm.setAttribute('in', 'SourceGraphic'); dm.setAttribute('in2', 'map');
+      dm.setAttribute('scale', String(Math.round(Math.min(34, h * 0.55)))); dm.setAttribute('xChannelSelector', 'R'); dm.setAttribute('yChannelSelector', 'G');
+      f.append(fi, dm); if (st) st.f.remove(); svg.appendChild(f); state.set(el, { w, h, f });
+      const v = `blur(6px) saturate(165%) brightness(1.1) url(#${id})`; el.style.backdropFilter = v; el.style.webkitBackdropFilter = v;
+    };
+    const ro = new ResizeObserver(entries => { for (const e of entries) build(e.target); });
+    for (const el of glassEls()) ro.observe(el);
+  }
 }
 
 // ------------------------------------------------------------------ frame
