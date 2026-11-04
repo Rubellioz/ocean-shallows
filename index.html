@@ -993,6 +993,7 @@ vec3 pal(float v, vec3 a, vec3 b, vec3 c, vec3 d){ return v<0.5? a : v<1.5? b : 
 void main(){
   if(uMode>1.5 && uMode<2.5){ gl_FragColor=vec4(vShade*0.4,0.0,0.0,1.0); return; }
   if(uMode<0.5 && vWorld.z>0.0) discard;
+  if(uMode>0.5 && uMode<1.5 && vWorld.z<=0.0) discard;
   float w=vC.y, v=vI.y; vec3 col; float a=1.0;
   if(uType<0.5){
     vec3 body=pal(v,vec3(0.78,0.30,0.55),vec3(0.55,0.38,0.75),vec3(0.86,0.52,0.30),vec3(0.62,0.70,0.40));
