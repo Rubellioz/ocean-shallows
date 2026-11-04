@@ -75,7 +75,7 @@ button:focus-visible{outline:2px solid var(--sun);outline-offset:2px;}
   font:600 12px/1 var(--ui);color:var(--paper);padding:8px 12px;border-radius:999px;cursor:pointer;opacity:.55;display:flex;gap:6px;align-items:center;}
 #showUI:hover{opacity:1;}
 #showUI[hidden],#ui[hidden]{display:none;}
-#toast{z-index:5;position:fixed;left:50%;top:calc(70px + env(safe-area-inset-top,0px));transform:translate(-50%,-8px);opacity:0;pointer-events:none;
+#toast{z-index:6;position:fixed;left:50%;top:calc(70px + env(safe-area-inset-top,0px));transform:translate(-50%,-8px);opacity:0;pointer-events:none;
   font:600 13px/1.3 var(--ui);color:var(--ink);background:rgba(250,253,252,.88);padding:9px 14px;border-radius:12px;
   box-shadow:0 8px 24px rgba(0,30,50,.25);transition:opacity .25s,transform .25s;max-width:calc(100% - 32px);text-align:center;}
 #toast.show{opacity:1;transform:translate(-50%,0);}
@@ -139,31 +139,149 @@ kbd{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.28);}
   .glass::after{display:none;}
 }
 @media (prefers-reduced-motion:reduce){ .tab-ind,.tab,.card,.controls button{transition:none;} }
+/* One menu: a glass rail with Weather, Animals and Settings. Right edge on desktop, bottom on phones.
+   Each opens a glass panel beside (desktop) or above (phone) the rail. */
+.brand p strong{font-weight:800;}
+.rail{position:fixed;z-index:3;pointer-events:auto;display:flex;flex-direction:column;gap:4px;padding:6px;border-radius:32px;
+  right:max(16px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);}
+.rbtn{all:unset;box-sizing:border-box;width:66px;height:64px;border-radius:26px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  cursor:pointer;color:var(--paper);font:700 10px/1 var(--ui);letter-spacing:.03em;text-shadow:0 1px 2px rgba(0,30,50,.35);
+  transition:background .25s,color .25s,box-shadow .25s,transform .4s var(--spring);}
+.rbtn svg{width:25px;height:25px;}
+.rbtn:hover{background:rgba(255,255,255,.14);}
+.rbtn:active{transform:scale(.9);}
+.rbtn[aria-expanded="true"]{background:var(--lg-sel);color:var(--ink);text-shadow:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.85),inset 0 -1px 2px rgba(150,100,0,.16),0 2px 10px rgba(255,200,90,.35);}
+.panel{position:fixed;z-index:3;pointer-events:auto;display:flex;flex-direction:column;border-radius:28px;box-sizing:border-box;
+  width:340px;max-width:calc(100vw - 120px);right:calc(max(16px,env(safe-area-inset-right,0px)) + 92px);top:50%;max-height:calc(100% - 32px);
+  opacity:0;transform:translateY(-50%) translateX(16px) scale(.97);transform-origin:right center;transition:opacity .2s ease,transform .45s var(--spring);}
+.panel.in{opacity:1;transform:translateY(-50%);}
+.panel.wide{width:430px;}
+.ph{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:16px 14px 8px 20px;}
+.ph h2{margin:0;font:600 23px/1.1 var(--display);color:var(--paper);text-shadow:0 1px 2px rgba(0,30,50,.35);font-variation-settings:"opsz" 72;}
+.ph .counter{margin:6px 0 0;padding:0;font:700 11px/1.4 var(--ui);letter-spacing:.06em;text-transform:uppercase;color:rgba(245,251,250,.84);
+  font-variant-numeric:tabular-nums;text-align:left;text-shadow:0 1px 2px rgba(0,30,50,.35);}
+.x{all:unset;box-sizing:border-box;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:var(--paper);flex:none;
+  background:rgba(255,255,255,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.3);transition:background .2s,transform .4s var(--spring);}
+.x svg{width:16px;height:16px;}
+.x:hover{background:rgba(255,255,255,.24);}
+.x:active{transform:scale(.88);}
+.x:focus-visible{outline:2px solid var(--sun);outline-offset:2px;}
+.pbody{padding:4px 14px 16px;overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:8px;min-height:0;scrollbar-width:thin;}
+.row{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:20px;cursor:pointer;color:var(--paper);
+  background:rgba(255,255,255,.08);box-shadow:inset 0 1px 0 rgba(255,255,255,.18);transition:background .2s,transform .35s var(--spring);}
+.row:hover{background:rgba(255,255,255,.15);}
+.row:active{transform:scale(.98);}
+.row:focus-visible{outline:2px solid var(--sun);outline-offset:2px;}
+.row>svg,.srow>svg{width:22px;height:22px;flex:none;}
+.rl{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;font:700 14px/1.15 var(--ui);color:var(--paper);text-shadow:0 1px 2px rgba(0,30,50,.35);}
+.rl small{font:400 12px/1.3 var(--ui);color:rgba(245,251,250,.8);}
+.sw{width:44px;height:26px;border-radius:999px;background:rgba(0,30,50,.32);box-shadow:inset 0 1px 3px rgba(0,20,40,.45);position:relative;flex:none;transition:background .25s;}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 2px 5px rgba(0,20,40,.35);transition:transform .4s var(--spring);}
+[aria-checked="true"]>.sw{background:#f2c457;}
+[aria-checked="true"]>.sw::after{transform:translateX(18px);}
+.slider{padding:11px 12px 10px;border-radius:20px;background:rgba(255,255,255,.08);box-shadow:inset 0 1px 0 rgba(255,255,255,.18);display:flex;flex-direction:column;gap:6px;color:var(--paper);}
+.slider.vol{padding:8px 14px 6px;margin-top:-4px;background:rgba(255,255,255,.05);}
+.srow{display:flex;align-items:center;gap:12px;}
+.vl{font:600 12px/1 var(--ui);color:rgba(245,251,250,.85);}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:28px;background:transparent;margin:0;cursor:pointer;}
+input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:999px;background:rgba(255,255,255,.35);box-shadow:inset 0 1px 2px rgba(0,20,40,.35);}
+input[type=range]::-moz-range-track{height:6px;border-radius:999px;background:rgba(255,255,255,.35);box-shadow:inset 0 1px 2px rgba(0,20,40,.35);}
+input[type=range].sea::-webkit-slider-runnable-track{background:linear-gradient(90deg,#b8f0e6,#3f8fd0 55%,#173f86);}
+input[type=range].sea::-moz-range-track{background:linear-gradient(90deg,#b8f0e6,#3f8fd0 55%,#173f86);}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;margin-top:-9px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,20,40,.4),inset 0 -1px 2px rgba(0,0,0,.08);}
+input[type=range]::-moz-range-thumb{width:24px;height:24px;border:0;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,20,40,.4);}
+input[type=range]:focus-visible{outline:2px solid var(--sun);outline-offset:3px;border-radius:999px;}
+.scale{display:flex;justify-content:space-between;font:700 10px/1 var(--ui);letter-spacing:.07em;text-transform:uppercase;color:rgba(245,251,250,.75);}
+.seg{display:flex;gap:2px;padding:3px;border-radius:999px;background:rgba(0,30,50,.18);box-shadow:inset 0 1px 2px rgba(0,20,40,.3),inset 0 -1px 0 rgba(255,255,255,.12);}
+.seg button{all:unset;flex:1;text-align:center;padding:9px 6px;border-radius:999px;font:700 12px/1 var(--ui);color:var(--paper);cursor:pointer;transition:background .25s,color .25s;}
+.seg button[aria-checked="true"]{background:var(--lg-sel);color:var(--ink);box-shadow:inset 0 1px 0 rgba(255,255,255,.85);}
+.seg button:focus-visible{outline:2px solid var(--sun);outline-offset:2px;}
+.ghost{all:unset;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 14px;border-radius:999px;cursor:pointer;
+  font:700 13px/1 var(--ui);color:var(--paper);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.25);
+  transition:background .2s,transform .35s var(--spring);}
+.ghost svg{width:18px;height:18px;}
+.ghost:hover{background:rgba(255,255,255,.2);}
+.ghost:active{transform:scale(.97);}
+.ghost:focus-visible{outline:2px solid var(--sun);outline-offset:2px;}
+.sec{margin:8px 4px 0;font:700 11px/1 var(--ui);letter-spacing:.08em;text-transform:uppercase;color:rgba(245,251,250,.72);}
+.keys{display:grid;grid-template-columns:auto 1fr;gap:7px 10px;margin:2px 4px 0;font:400 13px/1.3 var(--ui);color:rgba(245,251,250,.88);align-items:center;}
+.keys dt{text-align:right;}
+.keys dd{margin:0;}
+.hint{margin:2px 4px 0;font:400 12px/1.4 var(--ui);color:rgba(245,251,250,.78);}
+.dock,.dock.glass{display:flex;flex-direction:column;gap:10px;padding:0;border-radius:0;background:none;border:0;box-shadow:none;}
+.cardrow{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;overflow:visible;justify-content:stretch;}
+.card{width:auto;}
+.tabs{align-self:stretch;justify-content:space-between;}
+.tab{flex:1;text-align:center;}
+#thumbs{z-index:4;}
+@media (max-width:700px){
+  .rail{top:auto;right:auto;bottom:max(12px,env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);flex-direction:row;border-radius:30px;}
+  .rbtn{width:84px;height:56px;border-radius:24px;}
+  .panel,.panel.wide{left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));width:auto;max-width:none;top:auto;
+    bottom:calc(max(12px,env(safe-area-inset-bottom,0px)) + 80px);max-height:calc(100% - 170px);border-radius:26px;
+    transform:translateY(16px) scale(.98);transform-origin:bottom center;}
+  .panel.in{transform:none;}
+  .cardrow{grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:6px;}
+  .card{width:auto;}
+  .ph h2{font-size:20px;}
+  .brand p{display:none;}
+}
+@media (prefers-reduced-motion:reduce){ .panel,.rbtn,.row,.sw::after,.x,.ghost{transition:none;} }
+@media (hover:none),(max-width:700px){ .kb,.row kbd,.srow kbd,.ghost kbd{display:none;} }
+
 
 </style>
 </head>
 <body>
 <canvas id="sea" aria-label="Bovenaanzicht van een tropische zee met een klein strand. Tik of sleep op het water om rimpelingen te maken."></canvas>
 <div id="ui">
-  <div class="top">
-    <div class="brand">
-      <h1>Ocean Shallows</h1>
-      <p>Tik op een kaart om een dier in zee te gooien of koraal te planten. Sleep een kaart om het boven het water vast te houden en laat dan los.</p>
+  <div class="brand">
+    <h1>Ocean Shallows</h1>
+    <p>Open <strong>Dieren</strong> in het menu om een dier in zee te gooien of koraal te planten. Tik of sleep op het water voor rimpelingen.</p>
+  </div>
+  <nav id="rail" class="rail glass" aria-label="Menu">
+    <button class="rbtn" id="mWeather" type="button" aria-expanded="false" aria-controls="pWeather"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 3.5v1.3M3.8 8.2h1.3M5.2 4.9l.9.9M11.8 4.9l-.9.9"/><path d="M11.2 9.6a3 3 0 0 0-5.6 1"/><path d="M7.5 19.5a4 4 0 1 1 1-7.9 5 5 0 0 1 9.6 1.6 3.2 3.2 0 0 1-.6 6.3z"/></svg><span>Weer</span></button>
+    <button class="rbtn" id="mAnimals" type="button" aria-expanded="false" aria-controls="pAnimals"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12c3.6-5.2 9.8-6.1 15.2-1.4 1.1-1.6 2.2-2.6 3.3-3.1v9c-1.1-.5-2.2-1.5-3.3-3.1C12.3 18.1 6.1 17.2 2.5 12z"/><circle cx="8.2" cy="11" r="1" fill="currentColor" stroke="none"/></svg><span>Dieren</span></button>
+    <button class="rbtn" id="mSettings" type="button" aria-expanded="false" aria-controls="pSettings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></svg><span>Instellingen</span></button>
+  </nav>
+  <section id="pWeather" class="panel glass" hidden aria-labelledby="pWeatherT">
+    <header class="ph"><h2 id="pWeatherT">Weer</h2><button class="x" type="button" aria-label="Sluiten"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
+    <div class="pbody">
+      <button class="row" id="bRain" type="button" role="switch" aria-checked="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15a4.5 4.5 0 1 1 1.2-8.8A5.5 5.5 0 0 1 18.5 9 3.5 3.5 0 0 1 18 16H7"/><path d="M8 19l-1 2M12 19l-1 2M16 19l-1 2"/></svg><span class="rl">Regen<small>Druppels, rimpels en een grijzere lucht</small></span><kbd>R</kbd><span class="sw" aria-hidden="true"></span></button>
+      <button class="row" id="bWhirl" type="button" role="switch" aria-checked="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12a1.5 1.5 0 1 1 1.5-1.5c0 2.5-3.5 4-6 2.5S4.5 7.5 8 5.5s9-1 10.5 3S17 18 12 19.5 3 17 3 12"/></svg><span class="rl">Draaikolk<small>Sleep hem over het water</small></span><kbd>W</kbd><span class="sw" aria-hidden="true"></span></button>
+      <div class="slider">
+        <div class="srow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9c2 0 2-1.5 4.5-1.5S9.5 9 12 9s2.5-1.5 4.5-1.5S19 9 21 9M3 15c2 0 2-1.5 4.5-1.5S9.5 15 12 15s2.5-1.5 4.5-1.5S19 15 21 15"/></svg><label class="rl" for="seaState">Zeegang<small id="seaLabel">Normaal</small></label><kbd>C</kbd></div>
+        <input type="range" id="seaState" class="sea" min="0" max="100" value="50" aria-describedby="seaLabel">
+        <div class="scale" aria-hidden="true"><span>Kalm</span><span>Ruig</span></div>
+      </div>
     </div>
-    <nav class="controls glass" aria-label="Bediening van de zee">
-      <button id="bRain" type="button" aria-pressed="false" title="Regen (R)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M7 15a4.5 4.5 0 1 1 1.2-8.8A5.5 5.5 0 0 1 18.5 9 3.5 3.5 0 0 1 18 16H7"/><path d="M8 19l-1 2M12 19l-1 2M16 19l-1 2"/></svg><span>Regen</span><kbd>R</kbd></button>
-      <button id="bWhirl" type="button" aria-pressed="false" title="Draaikolk (W)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 12a1.5 1.5 0 1 1 1.5-1.5c0 2.5-3.5 4-6 2.5S4.5 7.5 8 5.5s9-1 10.5 3S17 18 12 19.5 3 17 3 12"/></svg><span>Draaikolk</span><kbd>W</kbd></button>
-      <button id="bCalm" type="button" aria-pressed="false" title="Kalm (C)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 10c2 0 2-1.5 4.5-1.5S9.5 10 12 10s2.5-1.5 4.5-1.5S19 10 21 10M3 15h18"/></svg><span>Kalm</span><kbd>C</kbd></button>
-      <button id="bClear" type="button" title="Zee leegmaken"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M6 6l2 2M16 16l2 2M6 18l2-2M16 8l2-2"/></svg><span>Zee leegmaken</span></button>
-      <button id="bSound" type="button" aria-pressed="false" title="Geluid (M)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path id="sndWaves" d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg><span>Geluid</span><kbd>M</kbd></button>
-      <button id="bMusic" type="button" aria-pressed="false" title="Muziek (U)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg><span>Muziek</span><kbd>U</kbd></button>
-      <button id="bHide" type="button" title="Menu verbergen (H)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/><path d="M4 20L20 4"/></svg><span>Menu verbergen</span><kbd>H</kbd></button>
-    </nav>
-  </div>
-  <div class="bottom">
-    <div class="counter glass" id="counter" aria-live="polite">0 roggen · 0 kwallen</div>
-    <div class="dock glass" id="dock" aria-label="Dieren en koraal"></div>
-  </div>
+  </section>
+  <section id="pAnimals" class="panel glass wide" hidden aria-labelledby="pAnimalsT">
+    <header class="ph"><div><h2 id="pAnimalsT">Dieren</h2><p class="counter" id="counter" aria-live="polite">0 roggen · 0 kwallen</p></div><button class="x" type="button" aria-label="Sluiten"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
+    <div class="pbody" id="animalsBody">
+      <div class="dock" id="dock" aria-label="Dieren en koraal"></div>
+      <p class="hint">Tik op een kaart om te gooien of te planten. Sleep een kaart om hem boven het water vast te houden en laat los.</p>
+      <button id="bClear" class="ghost" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M6 6l2 2M16 16l2 2M6 18l2-2M16 8l2-2"/></svg>Zee leegmaken</button>
+    </div>
+  </section>
+  <section id="pSettings" class="panel glass" hidden aria-labelledby="pSettingsT">
+    <header class="ph"><h2 id="pSettingsT">Instellingen</h2><button class="x" type="button" aria-label="Sluiten"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
+    <div class="pbody">
+      <p class="sec">Geluid</p>
+      <button class="row" id="bSound" type="button" role="switch" aria-checked="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path id="sndWaves" d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg><span class="rl">Geluid<small>Branding, plonzen en regen</small></span><kbd>M</kbd><span class="sw" aria-hidden="true"></span></button>
+      <div class="slider vol"><label class="vl" for="sfxVol">Volume geluid</label><input type="range" id="sfxVol" min="0" max="100" value="80"></div>
+      <button class="row" id="bMusic" type="button" role="switch" aria-checked="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg><span class="rl">Muziek<small>Rustige lagune-muziek</small></span><kbd>U</kbd><span class="sw" aria-hidden="true"></span></button>
+      <div class="slider vol"><label class="vl" for="musicVol">Volume muziek</label><input type="range" id="musicVol" min="0" max="100" value="70"></div>
+      <p class="sec" id="qLabel">Beeldkwaliteit</p>
+      <div class="seg" role="radiogroup" aria-labelledby="qLabel">
+        <button type="button" role="radio" data-q="auto" aria-checked="true">Automatisch</button><button type="button" role="radio" data-q="high" aria-checked="false">Hoog</button><button type="button" role="radio" data-q="low" aria-checked="false">Zuinig</button>
+      </div>
+      <p class="sec">Weergave</p>
+      <button id="bHide" class="ghost" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/><path d="M4 20L20 4"/></svg>Menu verbergen <kbd>H</kbd></button>
+      <p class="sec kb">Sneltoetsen</p>
+      <dl class="keys kb"><dt><kbd>R</kbd></dt><dd>Regen</dd><dt><kbd>W</kbd></dt><dd>Draaikolk</dd><dt><kbd>C</kbd></dt><dd>Kalme zee aan of uit</dd><dt><kbd>M</kbd></dt><dd>Geluid</dd><dt><kbd>U</kbd></dt><dd>Muziek</dd><dt><kbd>H</kbd></dt><dd>Menu verbergen of tonen</dd><dt><kbd>Esc</kbd></dt><dd>Paneel sluiten</dd></dl>
+    </div>
+  </section>
 </div>
 <button id="showUI" class="glass" type="button" hidden>Menu tonen <kbd>H</kbd></button>
 <div id="toast" role="status" aria-live="polite"></div>
@@ -1951,7 +2069,7 @@ function applySize(){
 // ------------------------------------------------------------------ creatures
 const rays = [], jellies = [];
 const whirl = { on: false, x: 0, y: 0, str: 0, R: 6 };
-const env = { rain: false, calm: false, overcast: 0 };
+const env = { rain: false, sea: 0.5, overcast: 0 };
 const count = () => rays.length + jellies.length + turtles.length + dolphins.length + clowns.length;
 
 function inBounds(x, y, m){ return Math.abs(x) < world.W / 2 - m && Math.abs(y) < world.H / 2 - m; }
@@ -1964,14 +2082,14 @@ function seawardPoint(x, y, minD){
   }
   return { x: px, y: py };
 }
-function dockTopWorld(){ const r = $('#dock').getBoundingClientRect(); return (0.5 - r.top / world.h) * world.H; }
+
 function randomWaterTarget(key){
   const sp = SPECIES[key]; const need = sp.kind === 'ray' ? sp.minDepth + 0.6 : 2.2;
-  const yMin = Math.min(dockTopWorld() + 3, world.H * 0.1), yMax = world.H / 2 - 6;
+  const yMin = -world.H / 2 + 5, yMax = world.H / 2 - 6;
   for (let i = 0; i < 60; i++){
     const x = (rnd() - 0.5) * (world.W - 14), y = lerp(yMin, yMax, rnd());
     const d = depthAt(x, y);
-    if (d > need && (key !== 'sting' || d < 5.5 || i > 45)) return { x, y };
+    if (d > need && (i > 50 || !underUI(x, y)) && (key !== 'sting' || d < 5.5 || i > 45)) return { x, y };
   }
   return seawardPoint(world.W * 0.15, 0, need);
 }
@@ -2574,7 +2692,7 @@ function coralSpot(){
     const h = heads.length ? heads[(rnd() * heads.length) | 0] : null;
     const a = rnd() * TAU; const x = h ? h.x + Math.cos(a) * (h.r + 0.8 + rnd() * 1.5) : (rnd() - 0.5) * world.W * 0.8, y = h ? h.y + Math.sin(a) * (h.r + 0.8 + rnd() * 1.5) : (rnd() - 0.5) * world.H * 0.6;
     const d = depthAt(x, y);
-    if (d > 1.6 && d < 10 && inBounds(x, y, 3) && y > dockTopWorld() + 1 && !corals.some(c => Math.hypot((c.anchored ? c.x : c.tx ?? c.x) - x, (c.anchored ? c.y : c.ty ?? c.y) - y) < 2.4)) return { x, y };
+    if (d > 1.6 && d < 10 && inBounds(x, y, 3) && !underUI(x, y) && !corals.some(c => Math.hypot((c.anchored ? c.x : c.tx ?? c.x) - x, (c.anchored ? c.y : c.ty ?? c.y) - y) < 2.4)) return { x, y };
   }
   return randomWaterTarget('moon');
 }
@@ -2656,7 +2774,9 @@ const Snd = {
     this.musicIn.connect(warm); warm.connect(this.musicBus); warm.connect(this.verb);
   },
   setOn(v){ this.ensure(); if (!this.ctx) return; this.on = v; if (v) this.ctx.resume(); const t = this.ctx.currentTime;
-    this.master.gain.cancelScheduledValues(t); this.master.gain.setTargetAtTime(v ? 0.9 : 0, t, 0.15); },
+    this.master.gain.cancelScheduledValues(t); this.master.gain.setTargetAtTime(v ? this.vol : 0, t, 0.15); },
+  vol: 0.8,
+  setVol(x){ this.vol = x; if (this.ctx && this.on){ const t = this.ctx.currentTime; this.master.gain.cancelScheduledValues(t); this.master.gain.setTargetAtTime(x, t, 0.08); } },
   out(p){ const c = this.ctx; if (c.createStereoPanner){ const s = c.createStereoPanner(); s.pan.value = clamp(p, -1, 1); s.connect(this.master); return s; } const g = c.createGain(); g.connect(this.master); return g; },
   src(){ const s = this.ctx.createBufferSource(); s.buffer = this.noise; s.loop = true; return s; },
   surf(amp, T, lead){
@@ -2726,7 +2846,8 @@ const Snd = {
 
 // ------------------------------------------------------------------ calm lagoon music: electric piano, pad, kalimba and sub bass, generated live
 const Music = {
-  on: false, timer: 0, next: 0, step: 0, bar: 0, bpm: 60, mel: 3,
+  on: false, timer: 0, next: 0, step: 0, bar: 0, bpm: 60, mel: 3, vol: 0.7,
+  setVol(x){ this.vol = x; if (Snd.ctx && this.on){ const t = Snd.ctx.currentTime; Snd.musicBus.gain.cancelScheduledValues(t); Snd.musicBus.gain.setTargetAtTime(x, t, 0.08); } },
   prog: [
     [50, [54, 57, 61, 64]], [42, [57, 61, 64, 66]], [43, [54, 59, 62, 69]], [45, [55, 62, 64, 69]],
     [47, [57, 62, 64, 66]], [42, [57, 61, 64, 69]], [40, [55, 59, 62, 66]], [45, [55, 61, 64, 67]],
@@ -2797,7 +2918,7 @@ const Music = {
   },
   setOn(v){
     Snd.ensure(); const c = Snd.ctx; if (!c) return; this.on = v; c.resume();
-    const t = c.currentTime; Snd.musicBus.gain.cancelScheduledValues(t); Snd.musicBus.gain.setTargetAtTime(v ? 0.7 : 0, t, v ? 0.8 : 0.3);
+    const t = c.currentTime; Snd.musicBus.gain.cancelScheduledValues(t); Snd.musicBus.gain.setTargetAtTime(v ? this.vol : 0, t, v ? 0.8 : 0.3);
     if (v && !this.timer){ this.next = c.currentTime + 0.15; this.step = 0; this.bar = 0; this.timer = setInterval(() => this.tick(), 90); this.tick(); }
     if (!v && this.timer){ const id = this.timer; this.timer = 0; setTimeout(() => { if (!this.on) clearInterval(id); else this.timer = id; }, 2500); }
   },
@@ -2963,33 +3084,83 @@ const ptrEnd = e => { if (e.pointerId === ptr.id){ ptr.down = false; ptr.whirl =
 canvas.addEventListener('pointerup', ptrEnd); canvas.addEventListener('pointercancel', ptrEnd);
 
 // controls
-const bRain = $('#bRain'), bWhirl = $('#bWhirl'), bCalm = $('#bCalm'), bSound = $('#bSound');
-function setRain(v){ env.rain = v; bRain.setAttribute('aria-pressed', v); }
-function setCalm(v){ env.calm = v; bCalm.setAttribute('aria-pressed', v); }
+const settings = (() => { try { return JSON.parse(localStorage.getItem('ocean-settings')) || {}; } catch (e){ return {}; } })();
+const saveSettings = () => { try { localStorage.setItem('ocean-settings', JSON.stringify(settings)); } catch (e){} };
+const bRain = $('#bRain'), bWhirl = $('#bWhirl'), bSound = $('#bSound'), bMusic = $('#bMusic'), seaIn = $('#seaState');
+function setRain(v){ env.rain = v; bRain.setAttribute('aria-checked', v); }
 function setWhirl(v){
-  whirl.on = v; bWhirl.setAttribute('aria-pressed', v);
-  if (v){ whirl.R = clamp(world.a * 0.09, 4, 8); const p = seawardPoint(world.W * 0.12, -world.H * 0.02, 4); whirl.x = p.x; whirl.y = p.y; toast('Sleep de draaikolk om hem te verplaatsen.'); }
+  whirl.on = v; bWhirl.setAttribute('aria-checked', v);
+  if (v){ whirl.R = clamp(world.a * 0.09, 4, 8); const p = seawardPoint(world.W * 0.12, -world.H * 0.02, 4); whirl.x = p.x; whirl.y = p.y; if (underUI(p.x, p.y)){ const q = seawardPoint(-world.W * 0.1, -world.H * 0.05, 4); whirl.x = q.x; whirl.y = q.y; } toast('Sleep de draaikolk om hem te verplaatsen.'); }
   else canvas.style.cursor = 'crosshair';
 }
-function setSound(v){ Snd.setOn(v); bSound.setAttribute('aria-pressed', v); $('#sndWaves').style.opacity = v ? 1 : 0.25; }
+const SEA_WORDS = [[0.12, 'Spiegelglad'], [0.3, 'Kalm'], [0.45, 'Rustig'], [0.6, 'Normaal'], [0.8, 'Woelig'], [1.01, 'Ruig']];
+function setSea(v, save){
+  env.sea = clamp(v, 0, 1); seaIn.value = Math.round(env.sea * 100);
+  const word = SEA_WORDS.find(w => env.sea < w[0])[1]; $('#seaLabel').textContent = word; seaIn.setAttribute('aria-valuetext', word);
+  if (save !== false){ settings.sea = env.sea; if (env.sea > 0.25) settings.lastSea = env.sea; saveSettings(); }
+}
+function setSound(v){ Snd.setOn(v); bSound.setAttribute('aria-checked', v); $('#sndWaves').style.opacity = v ? 1 : 0.25; }
+function setMusic(v){ Music.setOn(v); bMusic.setAttribute('aria-checked', v); }
 function setHidden(v){ $('#ui').hidden = v; $('#showUI').hidden = !v; if (LiveThumbs.cv) LiveThumbs.cv.style.display = v ? 'none' : ''; }
+function setQuality(q, save){
+  settings.q = q; if (save !== false) saveSettings();
+  document.querySelectorAll('.seg button').forEach(b => b.setAttribute('aria-checked', b.dataset.q === q ? 'true' : 'false'));
+  if (q === 'high'){ const i = QUALITY.findIndex(x => x.pr <= DPR + 0.01); qLevel = i < 0 ? 3 : i; applySize(); }
+  else if (q === 'low'){ qLevel = 4; applySize(); }
+}
 bRain.onclick = () => setRain(!env.rain);
 bWhirl.onclick = () => setWhirl(!whirl.on);
-bCalm.onclick = () => setCalm(!env.calm);
 bSound.onclick = () => setSound(!Snd.on);
-const bMusic = $('#bMusic');
-function setMusic(v){ Music.setOn(v); bMusic.setAttribute('aria-pressed', v); }
 bMusic.onclick = () => setMusic(!Music.on);
+seaIn.addEventListener('input', () => setSea(seaIn.value / 100));
+$('#sfxVol').addEventListener('input', e => { Snd.setVol(e.target.value / 100); settings.sfx = Snd.vol; saveSettings(); });
+$('#musicVol').addEventListener('input', e => { Music.setVol(e.target.value / 100); settings.music = Music.vol; saveSettings(); });
+document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => setQuality(b.dataset.q)));
+$('.seg').addEventListener('keydown', e => {
+  if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return; const bs = [...document.querySelectorAll('.seg button')];
+  const i = bs.findIndex(b => b.getAttribute('aria-checked') === 'true'); const n = bs[(i + (e.key === 'ArrowRight' ? 1 : bs.length - 1)) % bs.length]; setQuality(n.dataset.q); n.focus(); e.preventDefault();
+});
 $('#bClear').onclick = () => clearSea();
 $('#bHide').onclick = () => setHidden(true);
 $('#showUI').onclick = () => setHidden(false);
 $('#sndWaves').style.opacity = 0.25;
+Snd.vol = settings.sfx ?? 0.8; Music.vol = settings.music ?? 0.7;
+$('#sfxVol').value = Math.round(Snd.vol * 100); $('#musicVol').value = Math.round(Music.vol * 100);
+setSea(settings.sea ?? 0.5, false);
+// panels
+const MENU = { weather: ['mWeather', 'pWeather'], animals: ['mAnimals', 'pAnimals'], settings: ['mSettings', 'pSettings'] };
+let openName = null;
+function openPanel(name){
+  for (const k in MENU){
+    const btn = $('#' + MENU[k][0]), pan = $('#' + MENU[k][1]), on = k === name;
+    btn.setAttribute('aria-expanded', on ? 'true' : 'false');
+    if (on){ pan.hidden = false; pan._openT = performance.now(); requestAnimationFrame(() => requestAnimationFrame(() => {
+      pan.classList.add('in');
+      if (k === 'animals'){ tabInd.classList.add('still'); placeInd(); requestAnimationFrame(() => tabInd.classList.remove('still')); } })); }
+    else if (!pan.hidden){ pan.classList.remove('in'); clearTimeout(pan._t); pan._t = setTimeout(() => { if (!pan.classList.contains('in')) pan.hidden = true; }, 280); }
+  }
+  openName = name;
+}
+for (const k in MENU){
+  $('#' + MENU[k][0]).addEventListener('click', () => openPanel(openName === k ? null : k));
+  $('#' + MENU[k][1]).querySelector('.x').addEventListener('click', () => { openPanel(null); $('#' + MENU[k][0]).focus(); });
+}
+function underUI(x, y){
+  const sx = (x / world.W + 0.5) * world.w, sy = (0.5 - y / world.H) * world.h;
+  const els = [$('#rail'), ...Object.values(MENU).map(m => $('#' + m[1])).filter(pn => !pn.hidden), $('.brand')];
+  for (const el of els){ const r = el.getBoundingClientRect(); if (r.width && sx > r.left - 30 && sx < r.right + 30 && sy > r.top - 30 && sy < r.bottom + 30) return true; }
+  return false;
+}
 addEventListener('keydown', e => {
-  if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.key === 'Escape' && openName){ const b = $('#' + MENU[openName][0]); openPanel(null); b.focus(); return; }
+  if (e.repeat) return;
   const k = e.key.toLowerCase();
-  if (k === 'r') setRain(!env.rain); else if (k === 'w') setWhirl(!whirl.on); else if (k === 'c') setCalm(!env.calm);
+  if (k === 'r') setRain(!env.rain); else if (k === 'w') setWhirl(!whirl.on);
+  else if (k === 'c') setSea(env.sea < 0.25 ? (settings.lastSea || 0.5) : 0.1);
   else if (k === 'm') setSound(!Snd.on); else if (k === 'u') setMusic(!Music.on); else if (k === 'h') setHidden(!$('#ui').hidden);
 });
+
 
 // ------------------------------------------------------------------ thumbnails from the real models
 // ------------------------------------------------------------------ card thumbnails: each card has its own small scene, rendered live from the same models
@@ -3086,25 +3257,27 @@ const LiveThumbs = {
   render(t, dt){
     if (!this.ok) return;
     this.acc += dt; if (this.acc < 1 / 32) return; const step = this.acc; this.acc = 0;
-    const hidden = $('#ui').hidden; this.cv.style.display = hidden ? 'none' : ''; if (hidden) return;
-    const row = cardRow.getBoundingClientRect(); if (row.width < 2 || row.height < 2) return;
+    const pa = $('#pAnimals'); const show = !$('#ui').hidden && !pa.hidden && pa.classList.contains('in') && performance.now() - (pa._openT || 0) > 380;
+    this.cv.style.display = show ? '' : 'none'; if (!show) return;
+    const row = cardRow.getBoundingClientRect(), box = $('#animalsBody').getBoundingClientRect();
+    const L = Math.max(row.left, box.left), T = Math.max(row.top, box.top), R = Math.min(row.right, box.right), B = Math.min(row.bottom, box.bottom);
+    const cw = R - L, ch = B - T; if (cw < 2 || ch < 2){ this.cv.style.display = 'none'; return; }
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    if (Math.abs(row.width - this.w) > 0.5 || Math.abs(row.height - this.h) > 0.5 || this.r.getPixelRatio() !== dpr){
-      this.w = row.width; this.h = row.height; this.r.setPixelRatio(dpr); this.r.setSize(this.w, this.h, false);
-      this.cv.style.width = this.w + 'px'; this.cv.style.height = this.h + 'px';
+    if (Math.abs(cw - this.w) > 0.5 || Math.abs(ch - this.h) > 0.5 || this.r.getPixelRatio() !== dpr){
+      this.w = cw; this.h = ch; this.r.setPixelRatio(dpr); this.r.setSize(cw, ch, false); this.cv.style.width = cw + 'px'; this.cv.style.height = ch + 'px';
     }
-    this.cv.style.left = row.left + 'px'; this.cv.style.top = row.top + 'px';
+    this.cv.style.left = L + 'px'; this.cv.style.top = T + 'px';
     const r = this.r; r.setScissorTest(false); r.clear(); r.setScissorTest(true);
     setPass(3);
     for (const key of KEYS){
       const card = cards[key]; if (card.hidden) continue;
       const th = card.querySelector('.thumb').getBoundingClientRect();
-      const x0 = Math.max(th.left, row.left), x1 = Math.min(th.right, row.right), y0 = Math.max(th.top, row.top), y1 = Math.min(th.bottom, row.bottom);
+      const x0 = Math.max(th.left, L), x1 = Math.min(th.right, R), y0 = Math.max(th.top, T), y1 = Math.min(th.bottom, B);
       if (x1 - x0 < 1 || y1 - y0 < 1) continue;
       const it = this.items[key]; it.update(t, step);
       it.cam.aspect = th.width / th.height; it.cam.updateProjectionMatrix();
-      r.setViewport(th.left - row.left, row.bottom - th.bottom, th.width, th.height);
-      r.setScissor(x0 - row.left, row.bottom - y1, x1 - x0, y1 - y0);
+      r.setViewport(th.left - L, B - th.bottom, th.width, th.height);
+      r.setScissor(x0 - L, B - y1, x1 - x0, y1 - y0);
       r.render(it.scene, it.cam);
     }
   },
@@ -3151,7 +3324,7 @@ function makeThumbs(){
     svg.style.position = 'absolute'; svg.style.pointerEvents = 'none'; document.body.appendChild(svg);
     const state = new Map(); let uid = 0;
     const build = el => {
-      const r = el.getBoundingClientRect(), w = Math.round(r.width), h = Math.round(r.height); if (w < 8 || h < 8) return;
+      const w = el.offsetWidth, h = el.offsetHeight; if (w < 8 || h < 8) return;
       const st = state.get(el); if (st && st.w === w && st.h === h) return;
       const rad = Math.min(parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0, h / 2, w / 2), bez = Math.min(18, h * 0.32);
       const k = 0.5, cw = Math.max(2, Math.round(w * k)), ch = Math.max(2, Math.round(h * k));
@@ -3200,11 +3373,15 @@ function syncUniforms(){
 function frame(dt){
   time += dt; U.uTime.value = time;
   const u = compMat.uniforms;
-  u.uSwell.value = lerp(u.uSwell.value, env.calm ? 0.09 : 0.3, Math.min(1, dt * 1.2));
-  u.uChop.value = lerp(u.uChop.value, env.calm ? 0.4 : 1, Math.min(1, dt * 1.2));
+  const sea = env.sea ?? 0.5;
+  u.uSwell.value = lerp(u.uSwell.value, 0.06 + 0.6 * Math.pow(sea, 1.3), Math.min(1, dt * 1.2));
+  u.uChop.value = lerp(u.uChop.value, 0.35 + 1.3 * sea, Math.min(1, dt * 1.2));
+  if (sea > 0.62){ env.capAcc = (env.capAcc || 0) + dt * (sea - 0.62) * world.W * world.H / 160;
+    while (env.capAcc > 1){ env.capAcc -= 1; const x = (rnd() - 0.5) * world.W, y = (rnd() - 0.5) * world.H; if (depthAt(x, y) > 3){
+      addDrop(x, y, 0.7 + rnd() * 0.6, -0.25 - (sea - 0.62)); airFx.add({ type: 1, x, y, z: 0.03, size: 0.8 + rnd() * 1.4 * sea, grow: 0.8, life: 1.4 + rnd(), age: 0, alpha: 0.75, seed: 1 + ((rnd() * 90) | 0) }); } } }
   u.uRun.value = world.run * Math.sqrt(u.uSwell.value / 0.3);
   env.overcast = lerp(env.overcast, env.rain ? 1 : 0, Math.min(1, dt * 0.8)); u.uOvercast.value = env.overcast;
-  simUpdateMat.uniforms.uCalm.value = env.calm ? 1 : 0;
+  simUpdateMat.uniforms.uCalm.value = sea < 0.2 ? 1 : 0;
   whirl.str = lerp(whirl.str, whirl.on ? 1 : 0, Math.min(1, dt * 0.9));
   u.uWhirl.value.set(whirl.x, whirl.y, whirl.str, whirl.R);
   if (whirl.str > 0.05 && rnd() < dt * 12){ const a = time * 3 + rnd() * TAU, rr = whirl.R * (0.4 + rnd() * 0.5); addDrop(whirl.x + Math.cos(a) * rr, whirl.y + Math.sin(a) * rr, 0.6, -0.12 * whirl.str); }
@@ -3274,7 +3451,8 @@ function loop(now){
   perf.acc += raw; perf.frames++;
   if (perf.acc > 2){
     const ms = perf.acc / perf.frames * 1000; perf.acc = 0; perf.frames = 0;
-    if (ms > 24 && qLevel < QUALITY.length - 1){ qLevel++; perf.good = 0; applySize(); }
+    if ((settings.q || 'auto') !== 'auto'){ perf.good = 0; }
+    else if (ms > 24 && qLevel < QUALITY.length - 1){ qLevel++; perf.good = 0; applySize(); }
     else if (ms < 15 && qLevel > 0 && QUALITY[qLevel - 1].pr <= DPR + 0.01){ if (++perf.good >= 4){ qLevel--; perf.good = 0; applySize(); } }
     else perf.good = 0;
   }
@@ -3299,6 +3477,7 @@ addEventListener('resize', () => { clearTimeout(rsT); rsT = setTimeout(() => {
 }, 200); });
 
 layoutWorld();
+setQuality(settings.q || 'auto', false);
 LiveThumbs.init();
 makeThumbs();
 addToScene();
